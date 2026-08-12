@@ -1,6 +1,15 @@
 # Agent Behavior Gate
 
-This gate verifies that the pack still trains agents toward current Dext usage instead of stale examples or ASP.NET-style guesses.
+This gate verifies that the pack still trains agents toward current Dext usage instead of stale examples, ASP.NET-style guesses, or unnecessary generic Delphi wrappers.
+
+## Dext-native First
+
+- [ ] agents verify native Dext mechanisms before introducing custom framework-like abstractions
+- [ ] standard application composition considers `IStartup` + `App.UseStartup(...)`
+- [ ] ordinary Dext Entity CRUD defaults to scoped `TDbContext` + `IDbSet<T>`
+- [ ] a custom Repository/provider adapter requires a concrete domain/integration reason
+- [ ] agents do not generate `TFDQuery`/`TUniQuery` + ConnectionFactory stacks merely as ceremony around normal CRUD
+- [ ] native Dext JWT/auth APIs are preferred before custom token wrappers
 
 ## Routing and Controllers
 
@@ -13,6 +22,9 @@ This gate verifies that the pack still trains agents toward current Dext usage i
 
 - [ ] ORM result collections use `IList<T>`
 - [ ] child-collection ownership is explicit when DbContext owns entities
+- [ ] standard persistence registration uses `AddDbContext<TContext>` when appropriate
+- [ ] native provider helpers such as `UsePostgreSQL`, `UseFirebird` or `UseConnectionDef` are preferred over recreating normal DbContext connection lifecycle manually
+- [ ] Smart Properties / `Prototype.Entity<T>` or Specifications are considered for typed queries
 - [ ] detached updates mention `.Update(Entity)` before `SaveChanges`
 - [ ] Web DbContexts prefer pooling when appropriate
 - [ ] bulk operations require safety checks
@@ -20,8 +32,16 @@ This gate verifies that the pack still trains agents toward current Dext usage i
 ## Precision
 
 - [ ] exact financial values beyond four decimals route to `TBcd`/`FmtBcdType`
+- [ ] mapped exact decimals consider `[Precision(P, S)]`
 - [ ] examples do not normalize `NUMERIC(28,10)` to `Double`
 - [ ] provider binding keeps exact decimal semantics
+
+## Authentication / Authorization
+
+- [ ] JWT generation considers `IJwtTokenHandler` / `TJwtTokenHandler`
+- [ ] claims use verified Dext claims helpers such as `TClaimsBuilder`
+- [ ] middleware uses current `UseJwtAuthentication` APIs where applicable
+- [ ] route protection uses `RequireAuthorization` or current controller authorization metadata instead of hand-written token checks
 
 ## Performance
 
@@ -64,4 +84,4 @@ current source
 -> this pack
 ```
 
-A release fails this gate if any top-level agent/skill/prompt guidance contradicts this ordering.
+A release fails this gate if any top-level agent/skill/prompt guidance contradicts this ordering or trains agents to bypass native Dext APIs without a justified requirement.
