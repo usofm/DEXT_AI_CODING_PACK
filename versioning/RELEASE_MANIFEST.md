@@ -3,7 +3,7 @@
 ## Current Release
 
 ```text
-Pack version:          v2026.08.12-dext-412ed292
+Pack version:          v2026.08.12-r2-dext-412ed292
 Pack release date:     2026-08-12
 Upstream repository:   cesarliws/dext
 Upstream branch:       main
@@ -11,6 +11,19 @@ Upstream full SHA:     412ed29207d2d1dc5d4a259a7739a615aed0c626
 Upstream short SHA:    412ed292
 Upstream commit date:  2026-08-11
 ```
+
+## Revision Type
+
+`r2` is a pack-only hardening revision. The audited upstream Dext SHA did not change.
+
+Changes added in this revision:
+
+- executable Python pack validator
+- CI quality gate workflow
+- scheduled upstream drift detection
+- guarded automatic tag/GitHub Release publication
+- contribution contract
+- pull request quality template
 
 ## Audit Coverage
 
@@ -23,6 +36,10 @@ Domain skills: 7
 Task prompt templates: 8
 Agent integrations: 4 primary tool contracts + playbook
 Automation/refresh controls: enabled
+Quality/release gates: enabled
+CI self-validation: enabled
+Upstream drift monitor: enabled
+Guarded release publisher: enabled
 ```
 
 ## Major Upstream Features Captured
@@ -107,10 +124,22 @@ For a different Dext revision, run the refresh workflow before treating this pac
 - [x] task prompts created
 - [x] agent integrations created
 - [x] refresh workflow created
-- [x] README synchronized
+- [x] quality gates created
+- [x] executable validator created
+- [x] CI quality gate created
+- [x] upstream drift monitor created
+- [x] guarded release publisher created
+- [x] contribution/PR controls created
+- [x] README synchronized for r2
+
+## Release Notes
+
+```text
+releases/v2026.08.12-r2-dext-412ed292.md
+```
 
 ## Next Release Rule
 
 If upstream Dext moves, create a new canonical version using the new upstream short SHA.
 
-If only the pack changes, use an `-rN-` pack revision while preserving the same upstream SHA.
+If only the pack changes, increment the `-rN-` pack revision while preserving the same upstream SHA.
