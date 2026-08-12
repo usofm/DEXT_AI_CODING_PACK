@@ -1,0 +1,10 @@
+# DEXT AI Coding Pack is a Delphi/Pascal knowledge and tooling repository.
+# Python is used only as portable CI tooling and should not define the repository language.
+
+*.pas linguist-language=Pascal
+*.dpr linguist-language=Pascal
+*.dpk linguist-language=Pascal
+
+# Portable CI/helper scripts are implementation tooling, not the product language.
+tools/*.py linguist-vendored
+.github/** linguist-vendored
