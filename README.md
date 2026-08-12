@@ -2,6 +2,27 @@
 
 This pack is optimized for AI coding agents working with the Dext Delphi framework.
 
+## Current Release
+
+```text
+v2026.08.12-dext-412ed292
+```
+
+Compatibility anchor:
+
+```text
+cesarliws/dext@412ed29207d2d1dc5d4a259a7739a615aed0c626
+```
+
+Release metadata and history:
+
+- `versioning/RELEASE_MANIFEST.md`
+- `versioning/VERSIONING_POLICY.md`
+- `versioning/README.md`
+- `CHANGELOG.md`
+
+Do not interpret this release as compatible with an arbitrary future `main`; run the refresh workflow when upstream moves.
+
 ## Core Files
 
 Root files are intentionally compact and fast to load:
@@ -162,6 +183,7 @@ The pack explicitly guards against copying known stale patterns, including:
 
 ## Snapshot
 
+- pack version: `v2026.08.12-dext-412ed292`
 - source repository: `cesarliws/dext`
 - branch: `main`
 - audited HEAD: `412ed29207d2d1dc5d4a259a7739a615aed0c626`
@@ -175,11 +197,16 @@ The pack explicitly guards against copying known stale patterns, including:
 ```text
 DEXT_AI_CODING_PACK/
 ├── README.md
+├── CHANGELOG.md
 ├── DEXT_AI_MEMORY_ENRICHED.md
 ├── DEXT_API_SYMBOL_INDEX.md
 ├── DEXT_DECISION_TREE.md
 ├── DEXT_ANTI_PATTERNS.md
 ├── DEXT_CODE_RECIPES.md
+├── versioning/
+│   ├── README.md
+│   ├── VERSIONING_POLICY.md
+│   └── RELEASE_MANIFEST.md
 ├── agents/
 │   └── agent contracts and task playbook
 ├── skills/
@@ -233,6 +260,9 @@ snapshot SHA
   -> classify via CHANGE_IMPACT_MATRIX
   -> inspect changed source/skills/specs/examples
   -> update affected core/skills/prompts/examples/full parts
-  -> update snapshot
   -> run CONSISTENCY_CHECKLIST
+  -> update snapshot
+  -> update RELEASE_MANIFEST
+  -> update CHANGELOG
+  -> create new upstream-pinned release identity
 ```
