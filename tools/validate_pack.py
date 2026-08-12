@@ -130,11 +130,12 @@ def main() -> int:
     snapshot = read("snapshots/DEXT_VERSION_SNAPSHOT.md")
     changelog = read("CHANGELOG.md")
 
-    version = extract(r"v\d{4}\.\d{2}\.\d{2}(?:-r\d+)?-dext-[0-9a-f]{8}", readme, "pack version", errors)
-    # extract() returns group(1), so use an explicit group pattern for version.
-    if version is None:
-        m = re.search(r"(v\d{4}\.\d{2}\.\d{2}(?:-r\d+)?-dext-[0-9a-f]{8})", readme)
-        version = m.group(1) if m else None
+    version = extract(
+        r"(v\d{4}\.\d{2}\.\d{2}(?:-r\d+)?-dext-[0-9a-f]{8})",
+        readme,
+        "pack version",
+        errors,
+    )
 
     if version:
         for label, text in [("manifest", manifest), ("snapshot", snapshot), ("changelog", changelog)]:
