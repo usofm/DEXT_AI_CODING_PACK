@@ -5,7 +5,7 @@ This pack is optimized for AI coding agents working with the Dext Delphi framewo
 ## Current Release
 
 ```text
-v2026.08.12-dext-412ed292
+v2026.08.12-r2-dext-412ed292
 ```
 
 Compatibility anchor:
@@ -14,14 +14,46 @@ Compatibility anchor:
 cesarliws/dext@412ed29207d2d1dc5d4a259a7739a615aed0c626
 ```
 
+`r2` is a pack-only hardening revision. The audited upstream Dext revision is unchanged.
+
 Release metadata and history:
 
 - `versioning/RELEASE_MANIFEST.md`
 - `versioning/VERSIONING_POLICY.md`
 - `versioning/README.md`
 - `CHANGELOG.md`
+- `releases/v2026.08.12-r2-dext-412ed292.md`
 
 Do not interpret this release as compatible with an arbitrary future `main`; run the refresh workflow when upstream moves.
+
+## Continuous Validation and Release Automation
+
+The repository now validates itself:
+
+```text
+push / pull request
+  -> .github/workflows/quality-gate.yml
+  -> python tools/validate_pack.py
+
+scheduled daily
+  -> .github/workflows/upstream-drift.yml
+  -> compare audited Dext SHA with cesarliws/dext/main
+  -> open/update drift issue when changed
+
+successful quality gate on main
+  -> .github/workflows/publish-release.yml
+  -> revalidate
+  -> refuse if upstream moved
+  -> create missing immutable tag
+  -> create missing GitHub Release
+```
+
+Contribution controls:
+
+- `CONTRIBUTING.md`
+- `.github/PULL_REQUEST_TEMPLATE.md`
+
+The publisher is intentionally idempotent: an existing version tag or release is never silently moved or replaced.
 
 ## Core Files
 
@@ -41,22 +73,22 @@ Tool-facing instruction files live under `agents/`:
 - `agents/AGENTS.md` — generic repository-level agent contract
 - `agents/CURSOR_RULES.md` — Cursor rule source
 - `agents/ANTIGRAVITY_RULES.md` — Antigravity/Gemini guidance
-- `agents/AGENT_TASK_PLAYBOOK.md` — task-oriented routing for CRUD, FastPath, finance/TBcd, realtime, MCP, migration, testing, and more
+- `agents/AGENT_TASK_PLAYBOOK.md` — task-oriented routing
 - `agents/README.md` — recommended wiring and context-loading strategy
 
 These integrations deliberately use the compact root files first and escalate into `skills/`, `prompts/`, `examples/` or `full/` only when a task requires deeper evidence.
 
 ## Domain Skill Pack
 
-Small task-focused skills live under `skills/` and should be preferred over loading the whole memory for ordinary work.
+Small task-focused skills live under `skills/`:
 
-- `skills/dext-web/SKILL.md` — HTTP APIs, controllers, middleware, auth, Swagger
-- `skills/dext-orm/SKILL.md` — DbContext, IDbSet, querying, specifications, relations
-- `skills/dext-financial/SKILL.md` — TBcd/FmtBcdType and exact financial precision
-- `skills/dext-fastpath/SKILL.md` — MapFast, UseSql, direct UTF-8 streaming, pooling
-- `skills/dext-realtime/SKILL.md` — SSE, WebSocket, Hubs and Event Bus
-- `skills/dext-testing/SKILL.md` — unit/integration tests, Mock<T>, snapshots
-- `skills/dext-mcp/SKILL.md` — MCP tools, resources, prompts and transports
+- `skills/dext-web/SKILL.md`
+- `skills/dext-orm/SKILL.md`
+- `skills/dext-financial/SKILL.md`
+- `skills/dext-fastpath/SKILL.md`
+- `skills/dext-realtime/SKILL.md`
+- `skills/dext-testing/SKILL.md`
+- `skills/dext-mcp/SKILL.md`
 - `skills/README.md` — skill router
 
 Agent rule: route the task to the smallest relevant skill first, then load prompts/examples/full artifacts only if needed.
@@ -73,7 +105,7 @@ Operational workflow templates live under `prompts/`:
 - `prompts/migrate-dmvc-to-dext.md`
 - `prompts/review-dext-code.md`
 - `prompts/create-test-suite.md`
-- `prompts/README.md` — template router and evidence rules
+- `prompts/README.md`
 
 Use one prompt template per task. Do not load all templates into context.
 
@@ -81,11 +113,11 @@ Use one prompt template per task. Do not load all templates into context.
 
 Pack maintenance guidance lives under `automation/`:
 
-- `automation/README.md` — refresh entry point
-- `automation/REFRESH_WORKFLOW.md` — old snapshot -> new upstream HEAD procedure
-- `automation/CHANGE_IMPACT_MATRIX.md` — changed upstream path -> pack areas to inspect
-- `automation/CONSISTENCY_CHECKLIST.md` — final verification before closing a refresh
-- `automation/CHANGELOG_POLICY.md` — what upstream changes deserve agent-facing changelog entries
+- `automation/README.md`
+- `automation/REFRESH_WORKFLOW.md`
+- `automation/CHANGE_IMPACT_MATRIX.md`
+- `automation/CONSISTENCY_CHECKLIST.md`
+- `automation/CHANGELOG_POLICY.md`
 
 Refresh rule: do not regenerate the whole repository blindly. Compare the old audited SHA to the new Dext HEAD, classify the diff, refresh only affected domains, then run the consistency checklist.
 
@@ -93,17 +125,17 @@ Refresh rule: do not regenerate the whole repository blindly. Compare the old au
 
 Release-readiness guidance lives under `quality/`:
 
-- `quality/README.md` — quality gate overview
-- `quality/RELEASE_GATE.md` — mandatory structural and compatibility checks
-- `quality/REFERENCE_INTEGRITY.md` — internal path/reference validation
-- `quality/AGENT_BEHAVIOR_GATE.md` — anti-hallucination and drift behavior checks
-- `quality/RELEASE_CHECKLIST.md` — final sign-off before tag/release creation
+- `quality/README.md`
+- `quality/RELEASE_GATE.md`
+- `quality/REFERENCE_INTEGRITY.md`
+- `quality/AGENT_BEHAVIOR_GATE.md`
+- `quality/RELEASE_CHECKLIST.md`
 
-A release is not considered ready if any mandatory quality gate fails. Immediately before tagging, recheck the current Dext HEAD; if upstream moved, stop the release and run the refresh workflow first.
+A release is not ready if any mandatory gate fails. Immediately before publication, upstream Dext HEAD must still equal the audited SHA.
 
 ## Full Artifacts
 
-The complete memory and complete symbol index are preserved under `full/` in numbered parts so agents can load only the relevant ranges without losing any content to context/API limits.
+The complete memory and complete symbol index are preserved under `full/`:
 
 ```text
 full/
@@ -111,13 +143,13 @@ full/
 └── DEXT_API_SYMBOL_INDEX_PART_01.md ... PART_04.md
 ```
 
-Use the root compact files for routing and normal coding sessions. Load `full/` parts when deep architecture, historical evidence, exact feature coverage or exhaustive symbol context is needed.
+Use compact root files for normal coding sessions. Load `full/` parts only when deep architecture, historical evidence, exact feature coverage or exhaustive symbol context is required.
 
 ## Example Analysis
 
 The official Dext `Examples/` tree has been audited across all 8 groups, covering 50 directory-level examples.
 
-Core example-analysis files:
+Core files:
 
 - `examples/DEXT_EXAMPLES_INDEX.md`
 - `examples/DEXT_EXAMPLE_PATTERNS.md`
@@ -127,16 +159,7 @@ Core example-analysis files:
 - `examples/DEXT_EXAMPLE_DRIFT_REGISTER.md`
 - `examples/DEXT_TIER_A_DEEP_AUDIT.md`
 
-Group deep audits:
-
-- `examples/DEXT_01_BASICS_DEEP_AUDIT.md`
-- `examples/DEXT_02_WEB_DEEP_AUDIT.md`
-- `examples/DEXT_03_DATA_DEEP_AUDIT.md`
-- `examples/DEXT_04_ADVANCED_DEEP_AUDIT.md`
-- `examples/DEXT_05_UI_DEEP_AUDIT.md`
-- `examples/DEXT_07_USECASES_SUPPLEMENTAL_AUDIT.md`
-- `examples/DEXT_08_AI_DEEP_AUDIT.md`
-- `examples/DEXT_09_ACTIVE_ARCHITECTURE_DEEP_AUDIT.md`
+Group deep audits cover Basics, Web, Data, Advanced, UI, UseCases, AI and Active Architecture.
 
 ## Recommended Loading Strategy
 
@@ -153,8 +176,6 @@ Then:
 4. inspect example cross-reference and drift register
 5. load full artifacts only when deeper evidence is required
 
-Do not keep the entire full memory in every prompt unless the agent has a large context budget.
-
 ## Source Priority
 
 When information conflicts, use this precedence:
@@ -169,7 +190,7 @@ When information conflicts, use this precedence:
 8. This pack
 9. General analogy with ASP.NET Core or other frameworks
 
-Important: official example README files can lag API evolution. Use README text for intent and current `.pas` source for exact syntax.
+Official example README files can lag API evolution. Use README text for intent and current `.pas` source for exact syntax.
 
 ## Example Trust Tiers
 
@@ -183,19 +204,17 @@ A Tier C example must not be generalized into normal application architecture me
 
 ## Important Drift Guards Captured
 
-The pack explicitly guards against copying known stale patterns, including:
-
-- legacy `:id` route syntax instead of `{id}`
-- stale `[StringLength]` examples where repository-wide guidance says `[MaxLength(N)]`
-- manual request service resolution when typed/generic injection is available
-- old `X-RateLimit-*` naming versus current RFC-oriented `RateLimit-*` headers
-- manual pool `Acquire/Release` where current `AcquireScoped` RAII is available
-- older controller attribute names in some README files
-- assuming `Web.EventHub` is a realtime Hub example; it is an event-management domain application
+- use `{id}` instead of legacy `:id`
+- prefer `[MaxLength(N)]` over stale `[StringLength]` examples where repository-wide guidance applies
+- prefer typed DI over manual request service lookup
+- use current RFC-oriented `RateLimit-*` guidance over stale `X-RateLimit-*` examples
+- prefer `AcquireScoped` where the current pool API supports it
+- current `.pas` source beats stale example README syntax
+- `Web.EventHub` is an event-management application, not the realtime Hubs feature demo
 
 ## Snapshot
 
-- pack version: `v2026.08.12-dext-412ed292`
+- pack version: `v2026.08.12-r2-dext-412ed292`
 - source repository: `cesarliws/dext`
 - branch: `main`
 - audited HEAD: `412ed29207d2d1dc5d4a259a7739a615aed0c626`
@@ -210,36 +229,30 @@ The pack explicitly guards against copying known stale patterns, including:
 DEXT_AI_CODING_PACK/
 ├── README.md
 ├── CHANGELOG.md
+├── CONTRIBUTING.md
 ├── DEXT_AI_MEMORY_ENRICHED.md
 ├── DEXT_API_SYMBOL_INDEX.md
 ├── DEXT_DECISION_TREE.md
 ├── DEXT_ANTI_PATTERNS.md
 ├── DEXT_CODE_RECIPES.md
+├── .github/
+│   ├── PULL_REQUEST_TEMPLATE.md
+│   └── workflows/
+│       ├── quality-gate.yml
+│       ├── upstream-drift.yml
+│       └── publish-release.yml
+├── tools/
+│   └── validate_pack.py
 ├── versioning/
-│   ├── README.md
-│   ├── VERSIONING_POLICY.md
-│   └── RELEASE_MANIFEST.md
 ├── agents/
-│   └── agent contracts and task playbook
 ├── skills/
-│   └── task-focused Dext domain skills
 ├── prompts/
-│   └── operational task templates
 ├── automation/
-│   └── refresh and maintenance rules
 ├── quality/
-│   ├── README.md
-│   ├── RELEASE_GATE.md
-│   ├── REFERENCE_INTEGRITY.md
-│   ├── AGENT_BEHAVIOR_GATE.md
-│   └── RELEASE_CHECKLIST.md
+├── releases/
 ├── full/
-│   ├── DEXT_AI_MEMORY_ENRICHED_PART_01.md ... PART_09.md
-│   └── DEXT_API_SYMBOL_INDEX_PART_01.md ... PART_04.md
 ├── examples/
-│   └── audits, cross-reference, drift register and coverage matrix
 └── snapshots/
-    └── DEXT_VERSION_SNAPSHOT.md
 ```
 
 ## Agent Reference Flow
@@ -255,17 +268,17 @@ Question / Task
   -> DEXT_API_SYMBOL_INDEX.md
   -> DEXT_EXAMPLE_CROSS_REFERENCE.md
   -> DEXT_EXAMPLE_DRIFT_REGISTER.md
-  -> choose Tier A/B/C example from Coverage Matrix
+  -> choose Tier A/B/C example
   -> inspect example README for intent
   -> inspect actual .pas source for syntax
   -> verify current official Dext skill/source
-  -> load full/ memory or symbol parts only if deeper context is needed
+  -> load full/ parts only if deeper context is needed
   -> generate / review / test code
 ```
 
 ## Refresh Workflow
 
-When Dext `main` moves, follow `automation/REFRESH_WORKFLOW.md` instead of improvising the refresh.
+When Dext `main` moves, follow `automation/REFRESH_WORKFLOW.md`.
 
 ```text
 snapshot SHA
@@ -273,11 +286,10 @@ snapshot SHA
   -> compare old -> new
   -> classify via CHANGE_IMPACT_MATRIX
   -> inspect changed source/skills/specs/examples
-  -> update affected core/skills/prompts/examples/full parts
+  -> update affected pack areas
   -> run CONSISTENCY_CHECKLIST
   -> run quality gates
-  -> update snapshot
-  -> update RELEASE_MANIFEST
-  -> update CHANGELOG
-  -> create new upstream-pinned release identity
+  -> update snapshot + manifest + changelog + release notes
+  -> assign new upstream-pinned release identity
+  -> guarded publisher creates tag/release
 ```
