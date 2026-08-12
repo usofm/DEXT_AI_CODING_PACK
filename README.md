@@ -56,6 +56,18 @@ Operational workflow templates live under `prompts/`:
 
 Use one prompt template per task. Do not load all templates into context.
 
+## Refresh / Maintenance Automation
+
+Pack maintenance guidance lives under `automation/`:
+
+- `automation/README.md` — refresh entry point
+- `automation/REFRESH_WORKFLOW.md` — old snapshot -> new upstream HEAD procedure
+- `automation/CHANGE_IMPACT_MATRIX.md` — changed upstream path -> pack areas to inspect
+- `automation/CONSISTENCY_CHECKLIST.md` — final verification before closing a refresh
+- `automation/CHANGELOG_POLICY.md` — what upstream changes deserve agent-facing changelog entries
+
+Refresh rule: do not regenerate the whole repository blindly. Compare the old audited SHA to the new Dext HEAD, classify the diff, refresh only affected domains, then run the consistency checklist.
+
 ## Full Artifacts
 
 The complete memory and complete symbol index are preserved under `full/` in numbered parts so agents can load only the relevant ranges without losing any content to context/API limits.
@@ -169,25 +181,17 @@ DEXT_AI_CODING_PACK/
 ├── DEXT_ANTI_PATTERNS.md
 ├── DEXT_CODE_RECIPES.md
 ├── agents/
-│   ├── README.md
-│   ├── CLAUDE.md
-│   ├── AGENTS.md
-│   ├── CURSOR_RULES.md
-│   ├── ANTIGRAVITY_RULES.md
-│   └── AGENT_TASK_PLAYBOOK.md
+│   └── agent contracts and task playbook
 ├── skills/
-│   ├── README.md
-│   └── dext-*/SKILL.md
+│   └── task-focused Dext domain skills
 ├── prompts/
+│   └── operational task templates
+├── automation/
 │   ├── README.md
-│   ├── create-crud-api.md
-│   ├── create-financial-module.md
-│   ├── create-fast-endpoint.md
-│   ├── create-realtime-feature.md
-│   ├── create-mcp-server.md
-│   ├── migrate-dmvc-to-dext.md
-│   ├── review-dext-code.md
-│   └── create-test-suite.md
+│   ├── REFRESH_WORKFLOW.md
+│   ├── CHANGE_IMPACT_MATRIX.md
+│   ├── CONSISTENCY_CHECKLIST.md
+│   └── CHANGELOG_POLICY.md
 ├── full/
 │   ├── DEXT_AI_MEMORY_ENRICHED_PART_01.md ... PART_09.md
 │   └── DEXT_API_SYMBOL_INDEX_PART_01.md ... PART_04.md
@@ -220,19 +224,15 @@ Question / Task
 
 ## Refresh Workflow
 
-When Dext `main` moves:
+When Dext `main` moves, follow `automation/REFRESH_WORKFLOW.md` instead of improvising the refresh.
 
 ```text
-1. record the new HEAD
-2. compare with snapshots/DEXT_VERSION_SNAPSHOT.md
-3. inspect changed commits and public API symbols
-4. inspect changed Docs/skills and finalized specs
-5. inspect changed official examples
-6. update drift register and coverage evidence if needed
-7. refresh compact root files
-8. refresh affected domain skills
-9. refresh affected prompt templates
-10. refresh affected full/ parts
-11. update agent integration rules if behavior changed
-12. update snapshot SHA/date
+snapshot SHA
+  -> current upstream HEAD
+  -> compare old -> new
+  -> classify via CHANGE_IMPACT_MATRIX
+  -> inspect changed source/skills/specs/examples
+  -> update affected core/skills/prompts/examples/full parts
+  -> update snapshot
+  -> run CONSISTENCY_CHECKLIST
 ```
