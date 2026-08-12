@@ -28,6 +28,29 @@ Do not infer exact Dext APIs from ASP.NET Core similarity.
 Do not invent attributes, overloads, helper names, registration methods, middleware options, or compiler defines.
 When uncertain, say what is verified and what still requires source confirmation.
 
+## Dext-native first rule
+
+Before introducing a generic Delphi abstraction, verify whether Dext already provides the mechanism.
+
+Prefer native Dext facilities such as:
+
+```text
+IStartup / UseStartup
+TDbContext / IDbSet<T>
+AddDbContext<T>
+UsePostgreSQL / UseFirebird / UseConnectionDef
+Smart Properties / Prototype.Entity<T>
+Specifications
+typed Minimal API DI / controller DI
+IJwtTokenHandler / TJwtTokenHandler / TClaimsBuilder
+RequireAuthorization
+Dext Swagger/OpenAPI helpers
+```
+
+Do **not** replace ordinary Dext Entity CRUD with a manual `TFDQuery`/`TUniQuery` Repository + ConnectionFactory stack merely because that architecture is familiar.
+
+Custom repositories/raw provider access are justified only when the use case genuinely needs behavior not well expressed by Dext Entity, such as specialized vendor SQL, bulk/import pipelines, unusual stored-procedure contracts, or another explicit infrastructure boundary.
+
 ## Architecture Defaults
 
 Prefer:
@@ -36,10 +59,14 @@ Prefer:
 Endpoint/Controller
   -> Application Service / Manager
       -> Domain
-          -> DbContext / Repository / External Integration
+          -> Dext DbContext / External Integration
 ```
 
+A Repository abstraction is optional, not mandatory. If `TDbContext`/`IDbSet<T>` already provide the persistence contract cleanly, prefer them directly in the scoped application service.
+
 For large Minimal API applications, group routes into feature endpoint units instead of growing Startup into one monolithic file.
+
+For application composition, prefer the official `IStartup` + `App.UseStartup(...)` model when it fits the project.
 
 ## Data Rules
 
@@ -51,12 +78,15 @@ For large Minimal API applications, group routes into feature endpoint units ins
 - detached update: `.Update(Entity)` before `SaveChanges`
 - bulk operations: check `IsBulk*Safe`
 - raw SQL: parameterize; never concatenate untrusted input
+- Web DbContexts: `.AddDbContext<TContext>` + pooling when appropriate
+- provider-specific code belongs only at a genuine infrastructure boundary
 
 ## Web Rules
 
 - `{id}` route syntax
 - controller action route parameters start with `/`
 - typed/generic DI over manual service locator
+- native Dext auth metadata over hand-written authentication checks when applicable
 - normal pipeline first, FastPath selectively
 - production exceptions must be sanitized
 - forwarded headers require trusted proxies
@@ -92,6 +122,7 @@ Start compact. Escalate only when needed:
 A Dext answer is considered complete when it:
 
 - uses current verified symbols or clearly marks uncertainty
+- uses native Dext mechanisms before custom framework-like wrappers
 - avoids known drift/anti-patterns
 - follows Dext ownership/lifetime rules
 - uses the appropriate example tier
