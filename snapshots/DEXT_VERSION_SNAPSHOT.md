@@ -1,6 +1,6 @@
 # DEXT VERSION SNAPSHOT
 
-- Pack version: `v2026.08.12-dext-412ed292`
+- Pack version: `v2026.08.12-r2-dext-412ed292`
 - Source repository: `cesarliws/dext`
 - Branch: `main`
 - Audited HEAD: `412ed29207d2d1dc5d4a259a7739a615aed0c626`
@@ -17,9 +17,21 @@ Canonical release metadata is stored in:
 versioning/RELEASE_MANIFEST.md
 versioning/VERSIONING_POLICY.md
 CHANGELOG.md
+releases/v2026.08.12-r2-dext-412ed292.md
 ```
 
 Compatibility is anchored to the exact upstream SHA, not merely the date or branch name.
+
+## Pack Revision State
+
+`r2` preserves the same upstream compatibility anchor and adds repository hardening:
+
+- executable static validator
+- push/PR quality gate
+- scheduled upstream drift detection
+- guarded automatic tag/release publisher
+- contribution contract
+- pull request validation template
 
 ## Recent architecture changes captured by this pack
 
@@ -82,6 +94,26 @@ DEXT_API_SYMBOL_INDEX_PART_01.md ... PART_04.md
 
 Root memory/index files are compact operational versions. `full/` is the exhaustive reference set.
 
+## Continuous validation
+
+Repository automation now enforces:
+
+```text
+push / pull request
+  -> .github/workflows/quality-gate.yml
+  -> tools/validate_pack.py
+
+scheduled daily
+  -> .github/workflows/upstream-drift.yml
+  -> compare audited SHA with upstream main
+
+successful quality gate on main
+  -> .github/workflows/publish-release.yml
+  -> revalidate
+  -> verify upstream did not move
+  -> create missing tag/release only
+```
+
 ## Refresh rule
 
 When source `main` moves, follow `automation/REFRESH_WORKFLOW.md` and `automation/CHANGE_IMPACT_MATRIX.md`.
@@ -92,6 +124,7 @@ Required close-out sequence:
 compare old SHA -> new HEAD
   -> update affected pack areas only
   -> run automation/CONSISTENCY_CHECKLIST.md
+  -> run quality gates
   -> update this snapshot
   -> update versioning/RELEASE_MANIFEST.md
   -> update CHANGELOG.md
