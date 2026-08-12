@@ -89,6 +89,18 @@ Pack maintenance guidance lives under `automation/`:
 
 Refresh rule: do not regenerate the whole repository blindly. Compare the old audited SHA to the new Dext HEAD, classify the diff, refresh only affected domains, then run the consistency checklist.
 
+## Release Quality Gates
+
+Release-readiness guidance lives under `quality/`:
+
+- `quality/README.md` — quality gate overview
+- `quality/RELEASE_GATE.md` — mandatory structural and compatibility checks
+- `quality/REFERENCE_INTEGRITY.md` — internal path/reference validation
+- `quality/AGENT_BEHAVIOR_GATE.md` — anti-hallucination and drift behavior checks
+- `quality/RELEASE_CHECKLIST.md` — final sign-off before tag/release creation
+
+A release is not considered ready if any mandatory quality gate fails. Immediately before tagging, recheck the current Dext HEAD; if upstream moved, stop the release and run the refresh workflow first.
+
 ## Full Artifacts
 
 The complete memory and complete symbol index are preserved under `full/` in numbered parts so agents can load only the relevant ranges without losing any content to context/API limits.
@@ -214,11 +226,13 @@ DEXT_AI_CODING_PACK/
 ├── prompts/
 │   └── operational task templates
 ├── automation/
+│   └── refresh and maintenance rules
+├── quality/
 │   ├── README.md
-│   ├── REFRESH_WORKFLOW.md
-│   ├── CHANGE_IMPACT_MATRIX.md
-│   ├── CONSISTENCY_CHECKLIST.md
-│   └── CHANGELOG_POLICY.md
+│   ├── RELEASE_GATE.md
+│   ├── REFERENCE_INTEGRITY.md
+│   ├── AGENT_BEHAVIOR_GATE.md
+│   └── RELEASE_CHECKLIST.md
 ├── full/
 │   ├── DEXT_AI_MEMORY_ENRICHED_PART_01.md ... PART_09.md
 │   └── DEXT_API_SYMBOL_INDEX_PART_01.md ... PART_04.md
@@ -261,6 +275,7 @@ snapshot SHA
   -> inspect changed source/skills/specs/examples
   -> update affected core/skills/prompts/examples/full parts
   -> run CONSISTENCY_CHECKLIST
+  -> run quality gates
   -> update snapshot
   -> update RELEASE_MANIFEST
   -> update CHANGELOG
