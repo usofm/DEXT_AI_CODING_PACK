@@ -23,7 +23,7 @@ Tool-facing instruction files live under `agents/`:
 - `agents/AGENT_TASK_PLAYBOOK.md` — task-oriented routing for CRUD, FastPath, finance/TBcd, realtime, MCP, migration, testing, and more
 - `agents/README.md` — recommended wiring and context-loading strategy
 
-These integrations deliberately use the compact root files first and escalate into `skills/`, `examples/` or `full/` only when a task requires deeper evidence.
+These integrations deliberately use the compact root files first and escalate into `skills/`, `prompts/`, `examples/` or `full/` only when a task requires deeper evidence.
 
 ## Domain Skill Pack
 
@@ -38,7 +38,23 @@ Small task-focused skills live under `skills/` and should be preferred over load
 - `skills/dext-mcp/SKILL.md` — MCP tools, resources, prompts and transports
 - `skills/README.md` — skill router
 
-Agent rule: route the task to the smallest relevant skill first, then load examples/full artifacts only if that skill cannot resolve the question safely.
+Agent rule: route the task to the smallest relevant skill first, then load prompts/examples/full artifacts only if needed.
+
+## Prompt / Task Templates
+
+Operational workflow templates live under `prompts/`:
+
+- `prompts/create-crud-api.md`
+- `prompts/create-financial-module.md`
+- `prompts/create-fast-endpoint.md`
+- `prompts/create-realtime-feature.md`
+- `prompts/create-mcp-server.md`
+- `prompts/migrate-dmvc-to-dext.md`
+- `prompts/review-dext-code.md`
+- `prompts/create-test-suite.md`
+- `prompts/README.md` — template router and evidence rules
+
+Use one prompt template per task. Do not load all templates into context.
 
 ## Full Artifacts
 
@@ -46,19 +62,8 @@ The complete memory and complete symbol index are preserved under `full/` in num
 
 ```text
 full/
-├── DEXT_AI_MEMORY_ENRICHED_PART_01.md
-├── DEXT_AI_MEMORY_ENRICHED_PART_02.md
-├── DEXT_AI_MEMORY_ENRICHED_PART_03.md
-├── DEXT_AI_MEMORY_ENRICHED_PART_04.md
-├── DEXT_AI_MEMORY_ENRICHED_PART_05.md
-├── DEXT_AI_MEMORY_ENRICHED_PART_06.md
-├── DEXT_AI_MEMORY_ENRICHED_PART_07.md
-├── DEXT_AI_MEMORY_ENRICHED_PART_08.md
-├── DEXT_AI_MEMORY_ENRICHED_PART_09.md
-├── DEXT_API_SYMBOL_INDEX_PART_01.md
-├── DEXT_API_SYMBOL_INDEX_PART_02.md
-├── DEXT_API_SYMBOL_INDEX_PART_03.md
-└── DEXT_API_SYMBOL_INDEX_PART_04.md
+├── DEXT_AI_MEMORY_ENRICHED_PART_01.md ... PART_09.md
+└── DEXT_API_SYMBOL_INDEX_PART_01.md ... PART_04.md
 ```
 
 Use the root compact files for routing and normal coding sessions. Load `full/` parts when deep architecture, historical evidence, exact feature coverage or exhaustive symbol context is needed.
@@ -69,13 +74,13 @@ The official Dext `Examples/` tree has been audited across all 8 groups, coverin
 
 Core example-analysis files:
 
-- `examples/DEXT_EXAMPLES_INDEX.md` — categorized official example catalog
-- `examples/DEXT_EXAMPLE_PATTERNS.md` — recurring composition patterns extracted from examples
-- `examples/DEXT_EXAMPLE_CROSS_REFERENCE.md` — feature/API -> best official example
-- `examples/DEXT_EXAMPLE_GOLDEN_PATTERNS.md` — canonical patterns and trust rules
-- `examples/DEXT_EXAMPLES_COVERAGE_MATRIX.md` — 50-example coverage/tier matrix
-- `examples/DEXT_EXAMPLE_DRIFT_REGISTER.md` — known README/source/API drift and unsafe copy patterns
-- `examples/DEXT_TIER_A_DEEP_AUDIT.md` — deep audit of architecture-grade examples
+- `examples/DEXT_EXAMPLES_INDEX.md`
+- `examples/DEXT_EXAMPLE_PATTERNS.md`
+- `examples/DEXT_EXAMPLE_CROSS_REFERENCE.md`
+- `examples/DEXT_EXAMPLE_GOLDEN_PATTERNS.md`
+- `examples/DEXT_EXAMPLES_COVERAGE_MATRIX.md`
+- `examples/DEXT_EXAMPLE_DRIFT_REGISTER.md`
+- `examples/DEXT_TIER_A_DEEP_AUDIT.md`
 
 Group deep audits:
 
@@ -95,18 +100,13 @@ Always load:
 - `DEXT_DECISION_TREE.md`
 - `DEXT_ANTI_PATTERNS.md`
 
-Then route to one domain skill from `skills/README.md`.
+Then:
 
-Load on demand:
-
-- `DEXT_API_SYMBOL_INDEX.md`
-- `DEXT_CODE_RECIPES.md`
-- `agents/AGENT_TASK_PLAYBOOK.md` for task-specific routing
-- relevant sections/parts of the full memory
-- `examples/DEXT_EXAMPLE_CROSS_REFERENCE.md` when choosing a reference implementation
-- `examples/DEXT_EXAMPLE_DRIFT_REGISTER.md` before copying syntax from an example
-- `examples/DEXT_EXAMPLES_COVERAGE_MATRIX.md` when selecting Tier A/B/C evidence
-- `examples/DEXT_TIER_A_DEEP_AUDIT.md` for architecture decisions
+1. route to one domain skill from `skills/README.md`
+2. select one matching task template from `prompts/README.md`
+3. consult compact symbol index
+4. inspect example cross-reference and drift register
+5. load full artifacts only when deeper evidence is required
 
 Do not keep the entire full memory in every prompt unless the agent has a large context budget.
 
@@ -177,13 +177,17 @@ DEXT_AI_CODING_PACK/
 │   └── AGENT_TASK_PLAYBOOK.md
 ├── skills/
 │   ├── README.md
-│   ├── dext-web/SKILL.md
-│   ├── dext-orm/SKILL.md
-│   ├── dext-financial/SKILL.md
-│   ├── dext-fastpath/SKILL.md
-│   ├── dext-realtime/SKILL.md
-│   ├── dext-testing/SKILL.md
-│   └── dext-mcp/SKILL.md
+│   └── dext-*/SKILL.md
+├── prompts/
+│   ├── README.md
+│   ├── create-crud-api.md
+│   ├── create-financial-module.md
+│   ├── create-fast-endpoint.md
+│   ├── create-realtime-feature.md
+│   ├── create-mcp-server.md
+│   ├── migrate-dmvc-to-dext.md
+│   ├── review-dext-code.md
+│   └── create-test-suite.md
 ├── full/
 │   ├── DEXT_AI_MEMORY_ENRICHED_PART_01.md ... PART_09.md
 │   └── DEXT_API_SYMBOL_INDEX_PART_01.md ... PART_04.md
@@ -196,14 +200,14 @@ DEXT_AI_CODING_PACK/
 ## Agent Reference Flow
 
 ```text
-Question
+Question / Task
   -> agent-specific contract in agents/
   -> DEXT_DECISION_TREE.md
   -> DEXT_ANTI_PATTERNS.md
   -> skills/README.md
   -> smallest relevant skills/dext-*/SKILL.md
+  -> matching prompts/*.md task template
   -> DEXT_API_SYMBOL_INDEX.md
-  -> agents/AGENT_TASK_PLAYBOOK.md when useful
   -> DEXT_EXAMPLE_CROSS_REFERENCE.md
   -> DEXT_EXAMPLE_DRIFT_REGISTER.md
   -> choose Tier A/B/C example from Coverage Matrix
@@ -211,7 +215,7 @@ Question
   -> inspect actual .pas source for syntax
   -> verify current official Dext skill/source
   -> load full/ memory or symbol parts only if deeper context is needed
-  -> generate code
+  -> generate / review / test code
 ```
 
 ## Refresh Workflow
@@ -227,7 +231,8 @@ When Dext `main` moves:
 6. update drift register and coverage evidence if needed
 7. refresh compact root files
 8. refresh affected domain skills
-9. refresh affected full/ parts
-10. update agent integration rules if behavior changed
-11. update snapshot SHA/date
+9. refresh affected prompt templates
+10. refresh affected full/ parts
+11. update agent integration rules if behavior changed
+12. update snapshot SHA/date
 ```
