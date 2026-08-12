@@ -23,7 +23,22 @@ Tool-facing instruction files live under `agents/`:
 - `agents/AGENT_TASK_PLAYBOOK.md` — task-oriented routing for CRUD, FastPath, finance/TBcd, realtime, MCP, migration, testing, and more
 - `agents/README.md` — recommended wiring and context-loading strategy
 
-These integrations deliberately use the compact root files first and escalate into `examples/` or `full/` only when a task requires deeper evidence.
+These integrations deliberately use the compact root files first and escalate into `skills/`, `examples/` or `full/` only when a task requires deeper evidence.
+
+## Domain Skill Pack
+
+Small task-focused skills live under `skills/` and should be preferred over loading the whole memory for ordinary work.
+
+- `skills/dext-web/SKILL.md` — HTTP APIs, controllers, middleware, auth, Swagger
+- `skills/dext-orm/SKILL.md` — DbContext, IDbSet, querying, specifications, relations
+- `skills/dext-financial/SKILL.md` — TBcd/FmtBcdType and exact financial precision
+- `skills/dext-fastpath/SKILL.md` — MapFast, UseSql, direct UTF-8 streaming, pooling
+- `skills/dext-realtime/SKILL.md` — SSE, WebSocket, Hubs and Event Bus
+- `skills/dext-testing/SKILL.md` — unit/integration tests, Mock<T>, snapshots
+- `skills/dext-mcp/SKILL.md` — MCP tools, resources, prompts and transports
+- `skills/README.md` — skill router
+
+Agent rule: route the task to the smallest relevant skill first, then load examples/full artifacts only if that skill cannot resolve the question safely.
 
 ## Full Artifacts
 
@@ -80,6 +95,8 @@ Always load:
 - `DEXT_DECISION_TREE.md`
 - `DEXT_ANTI_PATTERNS.md`
 
+Then route to one domain skill from `skills/README.md`.
+
 Load on demand:
 
 - `DEXT_API_SYMBOL_INDEX.md`
@@ -100,7 +117,7 @@ When information conflicts, use this precedence:
 1. Current Dext source
 2. Repository-wide critical rules / `Docs/CONTRIBUTING_AI.md`
 3. Finalized specs
-4. Current official skills
+4. Current official Dext skills
 5. Current official example `.pas` source
 6. Example README/documentation
 7. Feature index
@@ -158,25 +175,20 @@ DEXT_AI_CODING_PACK/
 │   ├── CURSOR_RULES.md
 │   ├── ANTIGRAVITY_RULES.md
 │   └── AGENT_TASK_PLAYBOOK.md
+├── skills/
+│   ├── README.md
+│   ├── dext-web/SKILL.md
+│   ├── dext-orm/SKILL.md
+│   ├── dext-financial/SKILL.md
+│   ├── dext-fastpath/SKILL.md
+│   ├── dext-realtime/SKILL.md
+│   ├── dext-testing/SKILL.md
+│   └── dext-mcp/SKILL.md
 ├── full/
 │   ├── DEXT_AI_MEMORY_ENRICHED_PART_01.md ... PART_09.md
 │   └── DEXT_API_SYMBOL_INDEX_PART_01.md ... PART_04.md
 ├── examples/
-│   ├── DEXT_EXAMPLES_INDEX.md
-│   ├── DEXT_EXAMPLE_PATTERNS.md
-│   ├── DEXT_EXAMPLE_CROSS_REFERENCE.md
-│   ├── DEXT_EXAMPLE_GOLDEN_PATTERNS.md
-│   ├── DEXT_EXAMPLES_COVERAGE_MATRIX.md
-│   ├── DEXT_EXAMPLE_DRIFT_REGISTER.md
-│   ├── DEXT_TIER_A_DEEP_AUDIT.md
-│   ├── DEXT_01_BASICS_DEEP_AUDIT.md
-│   ├── DEXT_02_WEB_DEEP_AUDIT.md
-│   ├── DEXT_03_DATA_DEEP_AUDIT.md
-│   ├── DEXT_04_ADVANCED_DEEP_AUDIT.md
-│   ├── DEXT_05_UI_DEEP_AUDIT.md
-│   ├── DEXT_07_USECASES_SUPPLEMENTAL_AUDIT.md
-│   ├── DEXT_08_AI_DEEP_AUDIT.md
-│   └── DEXT_09_ACTIVE_ARCHITECTURE_DEEP_AUDIT.md
+│   └── audits, cross-reference, drift register and coverage matrix
 └── snapshots/
     └── DEXT_VERSION_SNAPSHOT.md
 ```
@@ -187,6 +199,9 @@ DEXT_AI_CODING_PACK/
 Question
   -> agent-specific contract in agents/
   -> DEXT_DECISION_TREE.md
+  -> DEXT_ANTI_PATTERNS.md
+  -> skills/README.md
+  -> smallest relevant skills/dext-*/SKILL.md
   -> DEXT_API_SYMBOL_INDEX.md
   -> agents/AGENT_TASK_PLAYBOOK.md when useful
   -> DEXT_EXAMPLE_CROSS_REFERENCE.md
@@ -194,7 +209,7 @@ Question
   -> choose Tier A/B/C example from Coverage Matrix
   -> inspect example README for intent
   -> inspect actual .pas source for syntax
-  -> verify current skill/source
+  -> verify current official Dext skill/source
   -> load full/ memory or symbol parts only if deeper context is needed
   -> generate code
 ```
@@ -211,7 +226,8 @@ When Dext `main` moves:
 5. inspect changed official examples
 6. update drift register and coverage evidence if needed
 7. refresh compact root files
-8. refresh affected full/ parts
-9. update agent integration rules if behavior changed
-10. update snapshot SHA/date
+8. refresh affected domain skills
+9. refresh affected full/ parts
+10. update agent integration rules if behavior changed
+11. update snapshot SHA/date
 ```
