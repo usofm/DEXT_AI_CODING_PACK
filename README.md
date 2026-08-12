@@ -2,56 +2,130 @@
 
 This pack is optimized for AI coding agents working with the Dext Delphi framework.
 
-## Files
+## Core Files
 
-- `DEXT_AI_MEMORY_ENRICHED.md` — full architectural and behavioral memory
-- `DEXT_API_SYMBOL_INDEX.md` — fast symbol/API lookup
+Root files are intentionally compact and fast to load:
+
+- `DEXT_AI_MEMORY_ENRICHED.md` — compact architectural/behavioral memory
+- `DEXT_API_SYMBOL_INDEX.md` — compact symbol/API lookup
 - `DEXT_DECISION_TREE.md` — choose the right Dext subsystem/API
-- `DEXT_ANTI_PATTERNS.md` — common mistakes and forbidden patterns
+- `DEXT_ANTI_PATTERNS.md` — common mistakes, drift guards and forbidden patterns
 - `DEXT_CODE_RECIPES.md` — compact implementation patterns
 
+## Full Artifacts
+
+The complete memory and complete symbol index are preserved under `full/` in numbered parts so agents can load only the relevant ranges without losing any content to context/API limits.
+
+```text
+full/
+├── DEXT_AI_MEMORY_ENRICHED_PART_01.md
+├── DEXT_AI_MEMORY_ENRICHED_PART_02.md
+├── DEXT_AI_MEMORY_ENRICHED_PART_03.md
+├── DEXT_AI_MEMORY_ENRICHED_PART_04.md
+├── DEXT_AI_MEMORY_ENRICHED_PART_05.md
+├── DEXT_AI_MEMORY_ENRICHED_PART_06.md
+├── DEXT_AI_MEMORY_ENRICHED_PART_07.md
+├── DEXT_AI_MEMORY_ENRICHED_PART_08.md
+├── DEXT_AI_MEMORY_ENRICHED_PART_09.md
+├── DEXT_API_SYMBOL_INDEX_PART_01.md
+├── DEXT_API_SYMBOL_INDEX_PART_02.md
+├── DEXT_API_SYMBOL_INDEX_PART_03.md
+└── DEXT_API_SYMBOL_INDEX_PART_04.md
+```
+
+Use the root compact files for routing and normal coding sessions. Load `full/` parts when deep architecture, historical evidence, exact feature coverage or exhaustive symbol context is needed.
+
 ## Example Analysis
+
+The official Dext `Examples/` tree has been audited across all 8 groups, covering 50 directory-level examples.
+
+Core example-analysis files:
 
 - `examples/DEXT_EXAMPLES_INDEX.md` — categorized official example catalog
 - `examples/DEXT_EXAMPLE_PATTERNS.md` — recurring composition patterns extracted from examples
 - `examples/DEXT_EXAMPLE_CROSS_REFERENCE.md` — feature/API -> best official example
 - `examples/DEXT_EXAMPLE_GOLDEN_PATTERNS.md` — canonical patterns and trust rules
+- `examples/DEXT_EXAMPLES_COVERAGE_MATRIX.md` — 50-example coverage/tier matrix
+- `examples/DEXT_EXAMPLE_DRIFT_REGISTER.md` — known README/source/API drift and unsafe copy patterns
 - `examples/DEXT_TIER_A_DEEP_AUDIT.md` — deep audit of architecture-grade examples
+
+Group deep audits:
+
+- `examples/DEXT_01_BASICS_DEEP_AUDIT.md`
+- `examples/DEXT_02_WEB_DEEP_AUDIT.md`
+- `examples/DEXT_03_DATA_DEEP_AUDIT.md`
+- `examples/DEXT_04_ADVANCED_DEEP_AUDIT.md`
+- `examples/DEXT_05_UI_DEEP_AUDIT.md`
+- `examples/DEXT_07_USECASES_SUPPLEMENTAL_AUDIT.md`
+- `examples/DEXT_08_AI_DEEP_AUDIT.md`
+- `examples/DEXT_09_ACTIVE_ARCHITECTURE_DEEP_AUDIT.md`
 
 ## Recommended Loading Strategy
 
 Always load:
+
 - `DEXT_DECISION_TREE.md`
 - `DEXT_ANTI_PATTERNS.md`
 
 Load on demand:
+
 - `DEXT_API_SYMBOL_INDEX.md`
-- relevant sections of `DEXT_AI_MEMORY_ENRICHED.md`
 - `DEXT_CODE_RECIPES.md`
+- relevant sections/parts of the full memory
 - `examples/DEXT_EXAMPLE_CROSS_REFERENCE.md` when choosing a reference implementation
+- `examples/DEXT_EXAMPLE_DRIFT_REGISTER.md` before copying syntax from an example
+- `examples/DEXT_EXAMPLES_COVERAGE_MATRIX.md` when selecting Tier A/B/C evidence
 - `examples/DEXT_TIER_A_DEEP_AUDIT.md` for architecture decisions
 
 Do not keep the entire full memory in every prompt unless the agent has a large context budget.
 
 ## Source Priority
 
+When information conflicts, use this precedence:
+
 1. Current Dext source
-2. Repository-wide critical rules / CONTRIBUTING_AI
+2. Repository-wide critical rules / `Docs/CONTRIBUTING_AI.md`
 3. Finalized specs
-4. Official skills
-5. Current official example source code
+4. Current official skills
+5. Current official example `.pas` source
 6. Example README/documentation
 7. Feature index
 8. This pack
+9. General analogy with ASP.NET Core or other frameworks
 
 Important: official example README files can lag API evolution. Use README text for intent and current `.pas` source for exact syntax.
+
+## Example Trust Tiers
+
+```text
+Tier A -> architecture/reference application
+Tier B -> focused feature/integration reference
+Tier C -> protocol/performance/framework-internal reference
+```
+
+A Tier C example must not be generalized into normal application architecture merely because it is fast or low-level.
+
+## Important Drift Guards Captured
+
+The pack explicitly guards against copying known stale patterns, including:
+
+- legacy `:id` route syntax instead of `{id}`
+- stale `[StringLength]` examples where repository-wide guidance says `[MaxLength(N)]`
+- manual request service resolution when typed/generic injection is available
+- old `X-RateLimit-*` naming versus current RFC-oriented `RateLimit-*` headers
+- manual pool `Acquire/Release` where current `AcquireScoped` RAII is available
+- older controller attribute names in some README files
+- assuming `Web.EventHub` is a realtime Hub example; it is an event-management domain application
 
 ## Snapshot
 
 - source repository: `cesarliws/dext`
 - branch: `main`
 - audited HEAD: `412ed29207d2d1dc5d4a259a7739a615aed0c626`
+- audited commit date: `2026-08-11`
 - snapshot date: `2026-08-12`
+- official examples audited: `50`
+- example groups audited: `8`
 
 ## Repository Layout
 
@@ -63,12 +137,25 @@ DEXT_AI_CODING_PACK/
 ├── DEXT_DECISION_TREE.md
 ├── DEXT_ANTI_PATTERNS.md
 ├── DEXT_CODE_RECIPES.md
+├── full/
+│   ├── DEXT_AI_MEMORY_ENRICHED_PART_01.md ... PART_09.md
+│   └── DEXT_API_SYMBOL_INDEX_PART_01.md ... PART_04.md
 ├── examples/
 │   ├── DEXT_EXAMPLES_INDEX.md
 │   ├── DEXT_EXAMPLE_PATTERNS.md
 │   ├── DEXT_EXAMPLE_CROSS_REFERENCE.md
 │   ├── DEXT_EXAMPLE_GOLDEN_PATTERNS.md
-│   └── DEXT_TIER_A_DEEP_AUDIT.md
+│   ├── DEXT_EXAMPLES_COVERAGE_MATRIX.md
+│   ├── DEXT_EXAMPLE_DRIFT_REGISTER.md
+│   ├── DEXT_TIER_A_DEEP_AUDIT.md
+│   ├── DEXT_01_BASICS_DEEP_AUDIT.md
+│   ├── DEXT_02_WEB_DEEP_AUDIT.md
+│   ├── DEXT_03_DATA_DEEP_AUDIT.md
+│   ├── DEXT_04_ADVANCED_DEEP_AUDIT.md
+│   ├── DEXT_05_UI_DEEP_AUDIT.md
+│   ├── DEXT_07_USECASES_SUPPLEMENTAL_AUDIT.md
+│   ├── DEXT_08_AI_DEEP_AUDIT.md
+│   └── DEXT_09_ACTIVE_ARCHITECTURE_DEEP_AUDIT.md
 └── snapshots/
     └── DEXT_VERSION_SNAPSHOT.md
 ```
@@ -80,9 +167,27 @@ Question
   -> DEXT_DECISION_TREE.md
   -> DEXT_API_SYMBOL_INDEX.md
   -> DEXT_EXAMPLE_CROSS_REFERENCE.md
-  -> choose Tier A/B/C example
+  -> DEXT_EXAMPLE_DRIFT_REGISTER.md
+  -> choose Tier A/B/C example from Coverage Matrix
   -> inspect example README for intent
   -> inspect actual .pas source for syntax
   -> verify current skill/source
+  -> load full/ memory or symbol parts only if deeper context is needed
   -> generate code
+```
+
+## Refresh Workflow
+
+When Dext `main` moves:
+
+```text
+1. record the new HEAD
+2. compare with snapshots/DEXT_VERSION_SNAPSHOT.md
+3. inspect changed commits and public API symbols
+4. inspect changed Docs/skills and finalized specs
+5. inspect changed official examples
+6. update drift register and coverage evidence if needed
+7. refresh compact root files
+8. refresh affected full/ parts
+9. update snapshot SHA/date
 ```
