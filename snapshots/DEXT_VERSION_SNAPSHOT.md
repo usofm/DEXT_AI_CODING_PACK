@@ -1,6 +1,6 @@
 # DEXT VERSION SNAPSHOT
 
-- Pack version: `v2026.08.12-r2-dext-412ed292`
+- Pack version: `v2026.08.12-r3-dext-412ed292`
 - Source repository: `cesarliws/dext`
 - Branch: `main`
 - Audited HEAD: `412ed29207d2d1dc5d4a259a7739a615aed0c626`
@@ -17,21 +17,43 @@ Canonical release metadata is stored in:
 versioning/RELEASE_MANIFEST.md
 versioning/VERSIONING_POLICY.md
 CHANGELOG.md
-releases/v2026.08.12-r2-dext-412ed292.md
+releases/v2026.08.12-r3-dext-412ed292.md
 ```
 
 Compatibility is anchored to the exact upstream SHA, not merely the date or branch name.
 
 ## Pack Revision State
 
-`r2` preserves the same upstream compatibility anchor and adds repository hardening:
+`r3` preserves the same upstream compatibility anchor and adds an agent-behavior correction derived from practical Golden Starter validation.
 
-- executable static validator
-- push/PR quality gate
-- scheduled upstream drift detection
-- guarded automatic tag/release publisher
-- contribution contract
-- pull request validation template
+Primary r3 guard:
+
+```text
+Prefer native Dext mechanisms before generic Delphi framework wrappers.
+```
+
+For ordinary persistence:
+
+```text
+Application Service / Manager
+  -> scoped TDbContext
+      -> IDbSet<TEntity>
+          -> Dext Entity ORM
+```
+
+A manual Repository + provider query + ConnectionFactory layer is no longer a default recommendation when Dext Entity already covers the requirement.
+
+Native composition/auth guidance now also emphasizes:
+
+- `IStartup` / `App.UseStartup(...)`
+- `AddDbContext<TContext>`
+- native provider helpers such as `UsePostgreSQL` / `UseFirebird` / `UseConnectionDef`
+- `.WithPooling(True)` for appropriate Web workloads
+- Smart Properties / `Prototype.Entity<T>`
+- `IJwtTokenHandler` / `TJwtTokenHandler`
+- `TClaimsBuilder`
+- `UseJwtAuthentication`
+- `RequireAuthorization`
 
 ## Recent architecture changes captured by this pack
 
@@ -96,7 +118,7 @@ Root memory/index files are compact operational versions. `full/` is the exhaust
 
 ## Continuous validation
 
-Repository automation now enforces:
+Repository automation enforces:
 
 ```text
 push / pull request
@@ -113,6 +135,8 @@ successful quality gate on main
   -> verify upstream did not move
   -> create missing tag/release only
 ```
+
+The validator now also checks Dext-native persistence/startup/auth guidance across the operational agent contract, ORM skill, CRUD prompt, anti-patterns and decision tree.
 
 ## Refresh rule
 
@@ -131,4 +155,4 @@ compare old SHA -> new HEAD
   -> assign a new upstream-pinned pack version
 ```
 
-Never silently retain obsolete method names, attributes, route syntax, ownership rules or middleware behavior in long-term coding memory.
+Never silently retain obsolete method names, attributes, route syntax, ownership rules, middleware behavior or abstraction defaults in long-term coding memory.
