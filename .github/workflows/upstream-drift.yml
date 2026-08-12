@@ -1,0 +1,81 @@
+name: Upstream Dext Drift
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve audited upstream SHA
+        id: audited
+        shell: bash
+        run: |
+          set -euo pipefail
+          SHA=$(grep -oE 'Audited HEAD:[[:space:]]*`?[0-9a-f]{40}' snapshots/DEXT_VERSION_SNAPSHOT.md | grep -oE '[0-9a-f]{40}' | head -n1)
+          test -n "$SHA"
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve current upstream HEAD
+        id: current
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          SHA=$(curl -fsSL \
+            -H 'Accept: application/vnd.github+json' \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            https://api.github.com/repos/cesarliws/dext/commits/main | jq -r '.sha')
+          test "$SHA" != "null"
+          test -n "$SHA"
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Report current state
+        shell: bash
+        run: |
+          echo "Audited: ${{ steps.audited.outputs.sha }}"
+          echo "Current: ${{ steps.current.outputs.sha }}"
+
+      - name: Open or update drift issue
+        if: steps.audited.outputs.sha != steps.current.outputs.sha
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AUDITED: ${{ steps.audited.outputs.sha }}
+          CURRENT: ${{ steps.current.outputs.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TITLE="Upstream Dext drift detected"
+          BODY=$(cat <<EOF
+          Dext \\`main\\` moved beyond the Pack's audited compatibility anchor.
+
+          - Audited SHA: \\`$AUDITED\\`
+          - Current SHA: \\`$CURRENT\\`
+
+          Run \\`automation/REFRESH_WORKFLOW.md\\`, classify changes with \\`automation/CHANGE_IMPACT_MATRIX.md\\`, refresh affected domains, then run the quality gates before creating a new release identity.
+          EOF
+          )
+
+          EXISTING=$(gh issue list --state open --search "$TITLE in:title" --json number,title --jq '.[0].number // empty')
+          if [[ -n "$EXISTING" ]]; then
+            gh issue comment "$EXISTING" --body "$BODY"
+          else
+            gh issue create --title "$TITLE" --body "$BODY"
+          fi
+
+      - name: Mark workflow as drifted
+        if: steps.audited.outputs.sha != steps.current.outputs.sha
+        shell: bash
+        run: |
+          echo "Upstream drift detected; Pack refresh required."
+          exit 1
