@@ -3,7 +3,7 @@
 ## Current Release
 
 ```text
-Pack version:          v2026.08.12-r2-dext-412ed292
+Pack version:          v2026.08.12-r3-dext-412ed292
 Pack release date:     2026-08-12
 Upstream repository:   cesarliws/dext
 Upstream branch:       main
@@ -14,16 +14,21 @@ Upstream commit date:  2026-08-11
 
 ## Revision Type
 
-`r2` is a pack-only hardening revision. The audited upstream Dext SHA did not change.
+`r3` is a pack-only agent-behavior correction. The audited upstream Dext SHA did not change.
+
+This revision hardens a practical rule discovered while validating the Pack against a real Golden Starter: **prefer native Dext mechanisms before introducing generic Delphi framework wrappers**.
 
 Changes added in this revision:
 
-- executable Python pack validator
-- CI quality gate workflow
-- scheduled upstream drift detection
-- guarded automatic tag/GitHub Release publication
-- contribution contract
-- pull request quality template
+- Dext-native-first agent contract
+- explicit ordinary-CRUD path through `TDbContext` / `IDbSet<T>`
+- Repository abstraction made optional rather than ceremonial
+- guard against manual `TFDQuery` / `TUniQuery` repository stacks for ordinary Dext Entity CRUD
+- native provider registration guidance (`AddDbContext`, `UsePostgreSQL`, `UseFirebird`, `UseConnectionDef`)
+- official `IStartup` / `UseStartup` composition guidance
+- native JWT/auth preference (`IJwtTokenHandler`, `TJwtTokenHandler`, `TClaimsBuilder`, `RequireAuthorization`)
+- strengthened CRUD task template, ORM skill, decision tree and anti-patterns
+- executable validator checks for the new behavior guards
 
 ## Audit Coverage
 
@@ -40,6 +45,7 @@ Quality/release gates: enabled
 CI self-validation: enabled
 Upstream drift monitor: enabled
 Guarded release publisher: enabled
+Dext-native-first guard: enabled
 ```
 
 ## Major Upstream Features Captured
@@ -92,7 +98,7 @@ Guarded release publisher: enabled
 - code review
 - test suite
 
-## Known Drift Guards
+## Known Drift / Behavior Guards
 
 - use `{id}`, not `:id`
 - prefer `[MaxLength(N)]` over stale `[StringLength]` examples per repository-wide guidance
@@ -101,6 +107,9 @@ Guarded release publisher: enabled
 - prefer `AcquireScoped` where current API supports it
 - current source syntax beats stale example README syntax
 - `Web.EventHub` is an event-management application, not the Hubs realtime feature demo
+- ordinary Dext Entity CRUD defaults to `TDbContext` + `IDbSet<T>`
+- custom provider repositories require a concrete reason
+- prefer native Dext auth/startup facilities before wrappers
 
 ## Compatibility Statement
 
@@ -114,7 +123,7 @@ For a different Dext revision, run the refresh workflow before treating this pac
 
 ## Validation Status
 
-- [x] upstream HEAD rechecked
+- [x] upstream HEAD rechecked for the audited baseline
 - [x] examples audited
 - [x] drift register created
 - [x] compact files created
@@ -130,12 +139,14 @@ For a different Dext revision, run the refresh workflow before treating this pac
 - [x] upstream drift monitor created
 - [x] guarded release publisher created
 - [x] contribution/PR controls created
-- [x] README synchronized for r2
+- [x] Dext-native-first behavior correction added
+- [x] Golden Starter feedback loop incorporated
+- [x] README synchronized for r3
 
 ## Release Notes
 
 ```text
-releases/v2026.08.12-r2-dext-412ed292.md
+releases/v2026.08.12-r3-dext-412ed292.md
 ```
 
 ## Next Release Rule
