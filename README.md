@@ -12,6 +12,19 @@ Root files are intentionally compact and fast to load:
 - `DEXT_ANTI_PATTERNS.md` — common mistakes, drift guards and forbidden patterns
 - `DEXT_CODE_RECIPES.md` — compact implementation patterns
 
+## Agent Integrations
+
+Tool-facing instruction files live under `agents/`:
+
+- `agents/CLAUDE.md` — Claude Code-oriented guidance
+- `agents/AGENTS.md` — generic repository-level agent contract
+- `agents/CURSOR_RULES.md` — Cursor rule source
+- `agents/ANTIGRAVITY_RULES.md` — Antigravity/Gemini guidance
+- `agents/AGENT_TASK_PLAYBOOK.md` — task-oriented routing for CRUD, FastPath, finance/TBcd, realtime, MCP, migration, testing, and more
+- `agents/README.md` — recommended wiring and context-loading strategy
+
+These integrations deliberately use the compact root files first and escalate into `examples/` or `full/` only when a task requires deeper evidence.
+
 ## Full Artifacts
 
 The complete memory and complete symbol index are preserved under `full/` in numbered parts so agents can load only the relevant ranges without losing any content to context/API limits.
@@ -71,6 +84,7 @@ Load on demand:
 
 - `DEXT_API_SYMBOL_INDEX.md`
 - `DEXT_CODE_RECIPES.md`
+- `agents/AGENT_TASK_PLAYBOOK.md` for task-specific routing
 - relevant sections/parts of the full memory
 - `examples/DEXT_EXAMPLE_CROSS_REFERENCE.md` when choosing a reference implementation
 - `examples/DEXT_EXAMPLE_DRIFT_REGISTER.md` before copying syntax from an example
@@ -137,6 +151,13 @@ DEXT_AI_CODING_PACK/
 ├── DEXT_DECISION_TREE.md
 ├── DEXT_ANTI_PATTERNS.md
 ├── DEXT_CODE_RECIPES.md
+├── agents/
+│   ├── README.md
+│   ├── CLAUDE.md
+│   ├── AGENTS.md
+│   ├── CURSOR_RULES.md
+│   ├── ANTIGRAVITY_RULES.md
+│   └── AGENT_TASK_PLAYBOOK.md
 ├── full/
 │   ├── DEXT_AI_MEMORY_ENRICHED_PART_01.md ... PART_09.md
 │   └── DEXT_API_SYMBOL_INDEX_PART_01.md ... PART_04.md
@@ -164,8 +185,10 @@ DEXT_AI_CODING_PACK/
 
 ```text
 Question
+  -> agent-specific contract in agents/
   -> DEXT_DECISION_TREE.md
   -> DEXT_API_SYMBOL_INDEX.md
+  -> agents/AGENT_TASK_PLAYBOOK.md when useful
   -> DEXT_EXAMPLE_CROSS_REFERENCE.md
   -> DEXT_EXAMPLE_DRIFT_REGISTER.md
   -> choose Tier A/B/C example from Coverage Matrix
@@ -189,5 +212,6 @@ When Dext `main` moves:
 6. update drift register and coverage evidence if needed
 7. refresh compact root files
 8. refresh affected full/ parts
-9. update snapshot SHA/date
+9. update agent integration rules if behavior changed
+10. update snapshot SHA/date
 ```
