@@ -15,11 +15,16 @@ ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_FILES = [
     "README.md",
     "CHANGELOG.md",
+    "CONTRIBUTING.md",
     "DEXT_AI_MEMORY_ENRICHED.md",
     "DEXT_API_SYMBOL_INDEX.md",
     "DEXT_DECISION_TREE.md",
     "DEXT_ANTI_PATTERNS.md",
     "DEXT_CODE_RECIPES.md",
+    ".github/PULL_REQUEST_TEMPLATE.md",
+    ".github/workflows/quality-gate.yml",
+    ".github/workflows/upstream-drift.yml",
+    ".github/workflows/publish-release.yml",
     "snapshots/DEXT_VERSION_SNAPSHOT.md",
     "versioning/RELEASE_MANIFEST.md",
     "versioning/VERSIONING_POLICY.md",
@@ -39,6 +44,7 @@ REQUIRED_FILES = [
     "agents/ANTIGRAVITY_RULES.md",
     "skills/README.md",
     "prompts/README.md",
+    "tools/validate_pack.py",
 ]
 
 SKILLS = [
