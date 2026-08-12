@@ -71,6 +71,15 @@ EXPECTED_GUARDS = [
     "Mock<T>",
     "TBcd",
     "MapFast",
+    "TDbContext",
+    "IDbSet<T>",
+    "AddDbContext",
+    "UsePostgreSQL",
+    "IStartup",
+    "UseStartup",
+    "IJwtTokenHandler",
+    "RequireAuthorization",
+    "TFDQuery",
 ]
 
 
@@ -169,12 +178,33 @@ def main() -> int:
 
     anti = read("DEXT_ANTI_PATTERNS.md")
     behavior = read("quality/AGENT_BEHAVIOR_GATE.md")
-    combined = anti + "\n" + behavior
+    agents = read("agents/AGENTS.md")
+    orm_skill = read("skills/dext-orm/SKILL.md")
+    crud_prompt = read("prompts/create-crud-api.md")
+    decision_tree = read("DEXT_DECISION_TREE.md")
+    combined = "\n".join([anti, behavior, agents, orm_skill, crud_prompt, decision_tree])
+
     for guard in EXPECTED_GUARDS:
         if guard not in combined:
             fail(errors, f"Required behavior guard missing: {guard}")
         else:
             ok(f"Behavior guard present: {guard}")
+
+    native_first_files = {
+        "agents/AGENTS.md": agents,
+        "skills/dext-orm/SKILL.md": orm_skill,
+        "prompts/create-crud-api.md": crud_prompt,
+    }
+    for rel, text in native_first_files.items():
+        if "TDbContext" not in text or "IDbSet" not in text:
+            fail(errors, f"Dext-native persistence guidance missing from {rel}")
+        else:
+            ok(f"Dext-native persistence guidance present: {rel}")
+
+    if "Repository is optional" not in agents and "repository is optional" not in agents.lower():
+        fail(errors, "Agent contract does not explicitly make Repository optional")
+    else:
+        ok("Repository is explicitly optional in agent contract")
 
     coverage = read("examples/DEXT_EXAMPLES_COVERAGE_MATRIX.md")
     if "50" not in coverage:
