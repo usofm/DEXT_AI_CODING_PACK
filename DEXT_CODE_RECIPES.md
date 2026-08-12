@@ -2,10 +2,25 @@
 
 > Compact reusable patterns for AI coding agents. Verify exact overloads against current source when necessary.
 
-## Minimal API
+## Minimal API — modern typed DI
+
+Prefer generic handler injection for new code:
 
 ```pascal
-App.MapGet('/users/{id}',
+App.Builder.MapPost<TCreateUserRequest, IUserService, IResult>(
+  '/api/users',
+  function(Request: TCreateUserRequest; Service: IUserService): IResult
+  begin
+    Result := Results.Created('/api/users', Service.CreateUser(Request));
+  end);
+```
+
+Use `Web.TaskFlowAPI` and current Tier-A source as reference before copying older request-service-resolution examples.
+
+## Typed route binding
+
+```pascal
+App.Builder.MapGet<Integer, IResult>('/api/tasks/{id}',
   function(Id: Integer): IResult
   begin
     Result := Results.Ok(...);
@@ -15,16 +30,27 @@ App.MapGet('/users/{id}',
 ## Controller route
 
 ```pascal
-[ApiController]
-[Route('/api/users')]
+[ApiController('/api/users')]
 TUsersController = class
 public
   [HttpGet('/{id}')]
-  function GetById(Id: Integer): IResult;
+  function GetById([FromRoute] Id: Integer): IResult;
 end;
 ```
 
 Never name a controller action `Create`.
+
+## Controller constructor injection
+
+```pascal
+[ApiController('/api/orders')]
+TOrdersController = class
+private
+  FService: IOrderService;
+public
+  constructor Create(Service: IOrderService);
+end;
+```
 
 ## DbContext + Web pooling
 
@@ -33,6 +59,18 @@ Services
   .AddDbContext<TAppDbContext>(...)
   .WithPooling(True);
 ```
+
+## Classic entity + typed query metadata
+
+For an existing/native Delphi model, keep ordinary property types and use Dext type metadata/query support instead of rewriting the entity solely for Smart Properties.
+
+```text
+Classic entity
+ + TEntityType<TEntity>
+ -> typed query metadata
+```
+
+Verify the exact current `TEntityType<T>` declaration pattern in `Orm.EntityStyles` / source.
 
 ## Smart Property entity
 
@@ -151,6 +189,8 @@ if Lease <> nil then
   Lease.Item.DoWork;
 ```
 
+Prefer this over older manual Acquire/Release examples when supported by the current revision.
+
 ## Hosted service
 
 ```pascal
@@ -171,6 +211,45 @@ Services.AddBackgroundJobs;
 TDextJobs.Initialize(JobClient);
 TDextJobs.Enqueue<TEmailService>('SendWelcomeEmail', ['user@example.com']);
 ```
+
+## Core Event Bus registration
+
+```pascal
+Services
+  .AddEventBus
+  .AddEventHandler<TOrderPlacedEvent, TEmailHandler>
+  .AddEventHandler<TOrderPlacedEvent, TAuditHandler>;
+```
+
+## Narrow typed event publisher
+
+```pascal
+constructor TOrderService.Create(
+  const Publisher: IEventPublisher<TOrderPlacedEvent>);
+```
+
+Prefer a narrow publisher when the service only needs one event capability.
+
+## Scoped Web Event Bus
+
+```pascal
+Services
+  .AddScopedEventBus
+  .AddEventHandler<TTaskCreatedEvent, TTaskCreatedHandler>;
+```
+
+Use when handlers intentionally need the same HTTP request scope/scoped DbContext. Verify transaction semantics separately.
+
+## Event publication test
+
+```text
+TEventBusTracker.Register(...)
+ -> execute service
+ -> Tracker.HasPublished<TEvent>
+ -> inspect LastPublished<TEvent>
+```
+
+Verify exact tracker overloads in current Event Bus source/example.
 
 ## Fluent validator
 
@@ -207,7 +286,166 @@ Logger.Information(
 );
 ```
 
-For high throughput consider `Builder.AddAsync`.
+For high throughput consider async logging.
+
+## Logging scope
+
+```pascal
+var Scope := Logger.BeginScope('Transaction {Id}', ['TX-001']);
+try
+  ...
+finally
+  Scope.Dispose;
+end;
+```
+
+## Layered configuration
+
+```text
+appsettings.json
+ -> local/environment-specific optional config
+ -> environment variables
+ -> command-line/host override
+```
+
+Later providers override earlier providers.
+
+## Typed options
+
+```pascal
+Services.Configure<TMyOptions>(Configuration.GetSection('MyFeature'));
+```
+
+Inject `IOptions<TMyOptions>` rather than reading raw configuration throughout business code.
+
+## REST client — typed record response
+
+```pascal
+var Response := RestClient('https://api.example.com')
+  .Get('/users/1')
+  .Await;
+```
+
+For complex requests use the `Request` / `TRestRequest` builder and verify exact current signatures.
+
+## External provider adapter
+
+```text
+HTTP endpoint/use case
+ -> IAIService / domain gateway
+ -> Gemini/OpenAI/etc adapter
+ -> Dext.Net.RestClient
+```
+
+Keep provider DTOs and errors at the adapter boundary.
+
+## MCP provider
+
+```pascal
+type
+  TMyProvider = class(TMCPToolProvider)
+  public
+    [MCPTool('lookup-customer', 'Looks up a customer')]
+    [MCPParam('id', 'Customer ID', ptNumber)]
+    function LookupCustomer(const Args: TJSONObject): TMCPToolResult; virtual;
+  end;
+```
+
+Registration pattern from the official demo:
+
+```pascal
+Server.RegisterProvider(TMyProvider.Create);
+```
+
+Verify current MCP protocol/attribute signatures and ownership rules in source/skill.
+
+## Hub method
+
+```pascal
+type
+  TChatHub = class(THub)
+  public
+    [HubMethod]
+    procedure SendMessage(const User, Message: string);
+  end;
+```
+
+Use groups/clients APIs rather than rebuilding application-level broadcast semantics on raw WebSocket.
+
+## Server-side Hub broadcast
+
+```text
+resolve/use IHubContext
+ -> Clients.All / Clients.Group(...)
+ -> SendAsync(...)
+```
+
+Use `Web.AirFlow` / Hubs source for current exact APIs.
+
+## Server-rendered view
+
+```pascal
+Result := Results.View('index');
+```
+
+Typed model/query variants are demonstrated by `WebStencilsDemo`. Preserve `DEXT_ENABLE_WEB_STENCILS` conditional boundaries when applicable.
+
+## HTMX vertical-slice flow
+
+```text
+hx-get / hx-post
+ -> Dext feature endpoint
+ -> service
+ -> HTML partial
+ -> hx-target replacement
+```
+
+Use `Web.Dext.Starter.Admin` as the architecture reference.
+
+## Multipart upload
+
+```pascal
+var File := Ctx.Request.Files.GetFile('myfile');
+if Assigned(File) then
+  File.CopyTo(TargetStream);
+```
+
+Add size/type/path/authorization/quota validation; never trust client filenames as server paths.
+
+## Stream download
+
+```text
+set Content-Type
+set Content-Disposition when attachment is intended
+stream TStream/file directly to response
+```
+
+Verify current response-stream API in `Web.StreamingDemo` source.
+
+## MVU state transition
+
+```pascal
+class function Update(
+  const Model: TCounterModel;
+  const Msg: TCounterMessage
+): TCounterModel;
+```
+
+Treat Model as immutable state; messages describe intent; Update returns a new model; View renders it.
+
+## Desktop composition root
+
+```text
+TStartup.Initialize
+ -> Application.Initialize
+ -> create form
+ -> resolve/inject ViewModel
+ -> Application.Run
+ -> free UI references
+ -> TStartup.Terminate
+```
+
+Do not resolve infrastructure ad hoc from every form.
 
 ## Mock test
 
@@ -236,9 +474,10 @@ Result.MatchSnapshot;
 ## Real-time choice
 
 ```text
+server-only internal decoupling -> Event Bus
+one-way client stream -> SSE
 raw bidirectional protocol -> WebSocket
 groups/broadcast abstraction -> THub / IHubContext<T>
-one-way server push -> SSE
 ```
 
 ## Reverse proxy deployment
@@ -262,9 +501,13 @@ Db.Users.FromSql(
 ## Official pattern discovery
 
 ```text
-1. DEXT_API_SYMBOL_INDEX.md
-2. matching Docs/skills/dext-*.md
-3. current source
-4. official example
-5. implement
+1. DEXT_DECISION_TREE.md
+2. DEXT_API_SYMBOL_INDEX.md
+3. examples/DEXT_EXAMPLE_CROSS_REFERENCE.md
+4. examples/DEXT_EXAMPLES_COVERAGE_MATRIX.md
+5. examples/DEXT_EXAMPLE_DRIFT_REGISTER.md
+6. relevant deep audit
+7. current official example .pas
+8. current Dext skill/source
+9. implement
 ```
