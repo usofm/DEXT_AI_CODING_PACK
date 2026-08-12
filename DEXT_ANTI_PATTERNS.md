@@ -2,6 +2,35 @@
 
 > High-signal list of things an AI coding agent should not do in Dext projects.
 
+## Framework bypass / abstraction overreach
+
+Do not hide native Dext mechanisms behind generic Delphi infrastructure merely because that structure is familiar from another project or framework.
+
+For ordinary Dext Entity CRUD, avoid this default:
+
+```text
+Endpoint
+  -> Service
+      -> IRepository
+          -> TFDQuery / TUniQuery
+              -> ConnectionFactory
+```
+
+when the operation is already naturally expressed as:
+
+```text
+Endpoint
+  -> Application Service / Manager
+      -> scoped TDbContext
+          -> IDbSet<TEntity>
+```
+
+A custom Repository/provider adapter is justified only when it represents a real domain/integration boundary or provider-specific requirement that Dext Entity does not express well. Do not add it as ceremony.
+
+Likewise, do not wrap native Dext JWT/authentication APIs in a custom token service when `IJwtTokenHandler`, `TJwtTokenHandler`, `TClaimsBuilder`, `UseJwtAuthentication` and `RequireAuthorization` already satisfy the requirement.
+
+For standard application composition, prefer the official `IStartup` + `App.UseStartup(...)` model when appropriate instead of inventing a parallel startup abstraction.
+
 ## Routing
 
 Wrong: `[HttpGet(':id')]`
@@ -61,6 +90,8 @@ BcdType    = Prop<TBcd>;
 FmtBcdType = Prop<TBcd>;
 ```
 
+Use `[Precision(P, S)]` when the mapped column requires explicit precision/scale metadata.
+
 ## Detached update
 
 For detached objects, call `.Update(Entity)` before `SaveChanges`.
@@ -70,6 +101,8 @@ For detached objects, call `.Update(Entity)` before `SaveChanges`.
 For Web workloads, prefer `.WithPooling(True)` when using Dext DbContext registration.
 
 Do not share one mutable DbContext as a singleton across unrelated requests.
+
+Do not manually construct provider connections for ordinary ORM CRUD when `AddDbContext<T>` plus the native provider helper already models the connection lifecycle.
 
 ## Pool lifecycle
 
@@ -96,6 +129,8 @@ Repository-wide Critical Rules take precedence over stale examples. Current guid
 ## Raw SQL
 
 Never concatenate untrusted values into SQL. Use parameters with `FromSql` / `UseSql`.
+
+Do not use raw provider queries as the default CRUD implementation when Dext Entity already supports the operation.
 
 ## Query execution
 
@@ -226,6 +261,8 @@ Do not `Start -> Stop -> Start` the same stopped instance. Stop, discard, then c
 ## Provider isolation
 
 Do not pull provider-specific dependencies such as UniDAC into Dext Core. Keep third-party drivers isolated.
+
+Provider isolation does not mean every application must build its own provider wrapper; when Dext already exposes the provider through `TDbContext`, use that native boundary.
 
 ## Ownership
 
