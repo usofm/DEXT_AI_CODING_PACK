@@ -5,7 +5,7 @@ This pack is optimized for AI coding agents working with the Dext Delphi framewo
 ## Current Release
 
 ```text
-v2026.08.12-r2-dext-412ed292
+v2026.08.12-r3-dext-412ed292
 ```
 
 Compatibility anchor:
@@ -14,7 +14,7 @@ Compatibility anchor:
 cesarliws/dext@412ed29207d2d1dc5d4a259a7739a615aed0c626
 ```
 
-`r2` is a pack-only hardening revision. The audited upstream Dext revision is unchanged.
+`r3` is a pack-only agent-behavior correction. The audited upstream Dext revision is unchanged.
 
 Release metadata and history:
 
@@ -22,13 +22,48 @@ Release metadata and history:
 - `versioning/VERSIONING_POLICY.md`
 - `versioning/README.md`
 - `CHANGELOG.md`
-- `releases/v2026.08.12-r2-dext-412ed292.md`
+- `releases/v2026.08.12-r3-dext-412ed292.md`
 
 Do not interpret this release as compatible with an arbitrary future `main`; run the refresh workflow when upstream moves.
 
+## Dext-native First
+
+A practical Golden Starter validation exposed an important failure mode: AI agents can produce technically valid Delphi while accidentally hiding Dext behind generic Repository/provider wrappers.
+
+`r3` makes the intended default explicit:
+
+```text
+Endpoint / Controller
+  -> Application Service / Manager
+      -> scoped TDbContext
+          -> IDbSet<TEntity>
+              -> Dext Entity ORM
+```
+
+Before generating a custom framework-like abstraction, verify whether Dext already supplies it.
+
+Prefer native Dext facilities such as:
+
+- `IStartup` / `App.UseStartup(...)`
+- `TDbContext` / `IDbSet<T>`
+- `AddDbContext<TContext>`
+- `UsePostgreSQL`, `UseFirebird`, `UseConnectionDef`, and other native provider helpers
+- Smart Properties / `Prototype.Entity<T>`
+- Specifications
+- `IList<T>` ORM results
+- `.Update(Entity)` before `SaveChanges` where required
+- `IJwtTokenHandler` / `TJwtTokenHandler`
+- `TClaimsBuilder`
+- `UseJwtAuthentication`
+- `RequireAuthorization`
+
+A custom Repository/provider adapter is **optional**, not mandatory. Introduce one only for a real domain/integration reason such as specialized provider SQL, stored-procedure contracts, unusual bulk/import behavior, external persistence, or another explicit boundary that Dext Entity does not model well.
+
+Do not create a ceremonial `IRepository -> TFDQuery/TUniQuery -> ConnectionFactory` stack around ordinary Dext Entity CRUD.
+
 ## Continuous Validation and Release Automation
 
-The repository now validates itself:
+The repository validates itself:
 
 ```text
 push / pull request
@@ -69,14 +104,14 @@ Root files are intentionally compact and fast to load:
 
 Tool-facing instruction files live under `agents/`:
 
-- `agents/CLAUDE.md` — Claude Code-oriented guidance
-- `agents/AGENTS.md` — generic repository-level agent contract
-- `agents/CURSOR_RULES.md` — Cursor rule source
-- `agents/ANTIGRAVITY_RULES.md` — Antigravity/Gemini guidance
-- `agents/AGENT_TASK_PLAYBOOK.md` — task-oriented routing
-- `agents/README.md` — recommended wiring and context-loading strategy
+- `agents/CLAUDE.md`
+- `agents/AGENTS.md`
+- `agents/CURSOR_RULES.md`
+- `agents/ANTIGRAVITY_RULES.md`
+- `agents/AGENT_TASK_PLAYBOOK.md`
+- `agents/README.md`
 
-These integrations deliberately use the compact root files first and escalate into `skills/`, `prompts/`, `examples/` or `full/` only when a task requires deeper evidence.
+These integrations deliberately use compact root files first and escalate into `skills/`, `prompts/`, `examples/` or `full/` only when a task requires deeper evidence.
 
 ## Domain Skill Pack
 
@@ -89,7 +124,7 @@ Small task-focused skills live under `skills/`:
 - `skills/dext-realtime/SKILL.md`
 - `skills/dext-testing/SKILL.md`
 - `skills/dext-mcp/SKILL.md`
-- `skills/README.md` — skill router
+- `skills/README.md`
 
 Agent rule: route the task to the smallest relevant skill first, then load prompts/examples/full artifacts only if needed.
 
@@ -132,6 +167,8 @@ Release-readiness guidance lives under `quality/`:
 - `quality/RELEASE_CHECKLIST.md`
 
 A release is not ready if any mandatory gate fails. Immediately before publication, upstream Dext HEAD must still equal the audited SHA.
+
+`quality/AGENT_BEHAVIOR_GATE.md` now explicitly checks abstraction overreach: normal Dext Entity CRUD should not be replaced with provider-query plumbing without a justified boundary.
 
 ## Full Artifacts
 
@@ -202,11 +239,15 @@ Tier C -> protocol/performance/framework-internal reference
 
 A Tier C example must not be generalized into normal application architecture merely because it is fast or low-level.
 
-## Important Drift Guards Captured
+## Important Drift / Behavior Guards Captured
 
 - use `{id}` instead of legacy `:id`
 - prefer `[MaxLength(N)]` over stale `[StringLength]` examples where repository-wide guidance applies
 - prefer typed DI over manual request service lookup
+- prefer Dext-native persistence over ceremonial provider-query repositories
+- use `TDbContext` + `IDbSet<T>` for ordinary ORM CRUD
+- prefer native Dext startup/auth mechanisms before custom wrappers
+- use `FmtBcdType` / `TBcd` and `[Precision(P,S)]` for exact mapped decimals as appropriate
 - use current RFC-oriented `RateLimit-*` guidance over stale `X-RateLimit-*` examples
 - prefer `AcquireScoped` where the current pool API supports it
 - current `.pas` source beats stale example README syntax
@@ -214,7 +255,7 @@ A Tier C example must not be generalized into normal application architecture me
 
 ## Snapshot
 
-- pack version: `v2026.08.12-r2-dext-412ed292`
+- pack version: `v2026.08.12-r3-dext-412ed292`
 - source repository: `cesarliws/dext`
 - branch: `main`
 - audited HEAD: `412ed29207d2d1dc5d4a259a7739a615aed0c626`
@@ -242,7 +283,8 @@ DEXT_AI_CODING_PACK/
 │       ├── upstream-drift.yml
 │       └── publish-release.yml
 ├── tools/
-│   └── validate_pack.py
+│   ├── validate_pack.py
+│   └── delphi/
 ├── versioning/
 ├── agents/
 ├── skills/
