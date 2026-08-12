@@ -9,6 +9,40 @@ vYYYY.MM.DD-dext-<shortsha>
 vYYYY.MM.DD-rN-dext-<shortsha>  # pack-only revision
 ```
 
+## [v2026.08.12-r3-dext-412ed292] - 2026-08-12
+
+### Agent Behavior Correction
+
+- added a Dext-native-first rule across the generic agent contract, ORM skill, CRUD prompt, decision tree and anti-patterns
+- ordinary CRUD now defaults to scoped `TDbContext` + `IDbSet<T>` instead of a ceremonial Repository/provider-query stack
+- Repository abstractions are explicitly optional and require a meaningful domain/integration reason
+- manual `TFDQuery` / `TUniQuery` + ConnectionFactory layers are discouraged for ordinary CRUD already covered by Dext Entity
+- standard application composition now explicitly considers `IStartup` + `App.UseStartup(...)`
+- provider setup favors `AddDbContext<T>` plus native helpers such as `UsePostgreSQL`, `UseFirebird` or `UseConnectionDef`
+- native Dext JWT/auth primitives are preferred before custom token wrappers
+- exact financial entity guidance now also emphasizes `[Precision(P, S)]`
+
+### Validation Improvements
+
+- Agent Behavior Gate now checks Dext-native-first architecture
+- executable validator checks for `TDbContext`, `IDbSet<T>`, `AddDbContext`, provider-helper, startup and native-auth guard vocabulary
+- validator verifies that Repository is explicitly optional in the generic agent contract
+- CRUD prompt now requires justification before generating a custom persistence adapter
+
+### Practical Evidence
+
+This correction came from a three-way audit of official Dext source/examples, this Pack, and the `DEXT_ENTERPRISE_STARTER` Golden Sample. The starter initially over-applied generic Delphi Repository/FireDAC patterns and was refactored back to native Dext Entity, startup and authentication patterns.
+
+### Compatibility
+
+Upstream Dext is unchanged:
+
+```text
+cesarliws/dext@412ed29207d2d1dc5d4a259a7739a615aed0c626
+```
+
+This is a pack-only behavior revision.
+
 ## [v2026.08.12-r2-dext-412ed292] - 2026-08-12
 
 ### Added
