@@ -166,8 +166,8 @@ Before emitting code with an exact attribute/overload/configuration method:
 
 ```text
 1. locate symbol in pack index
-2. read the matching official skill
-3. inspect the current source signature
+2. read matching official skill
+3. inspect current source signature
 4. inspect nearest official example
 5. generate code
 ```
@@ -176,16 +176,14 @@ This rule is especially important because Dext evolves rapidly.
 
 ## Golden Pattern 16 — Example Source Beats Example README
 
-Official example README files can lag API evolution. Use README prose to understand intent, but use the current `.pas` source for exact syntax.
-
-Observed case: `Web.DextStore/README.md` still names older controller attributes, while `DextStore.Controllers.pas` uses current `[ApiController]`, `[HttpGet]`, `[HttpPost]`, `[FromRoute]` and `[FromServices]` forms.
-
-Agent rule:
+Official example README files can lag API evolution. Use README prose to understand intent, but use the current `.pas` source for exact example syntax.
 
 ```text
 README -> intent
-source  -> exact syntax
+source  -> exact example syntax
 ```
+
+Current framework source and repository-wide Critical Rules still outrank both.
 
 ## Golden Pattern 17 — Scale Minimal APIs With Endpoint Modules
 
@@ -199,8 +197,6 @@ DPR
       -> Register feature endpoints
 ```
 
-This prevents Startup from becoming a monolithic route file and keeps transport code organized by feature.
-
 ## Golden Pattern 18 — Domain Rules Outside Transport
 
 Tier A examples repeatedly separate business behavior from HTTP concerns:
@@ -213,7 +209,7 @@ Server / Controllers / Endpoints
      Domain + Data
 ```
 
-State transitions, SLA rules, stock/capacity validation, pricing/discount logic and similar domain behavior should remain testable without the web server.
+State transitions, SLA rules, stock/capacity validation, pricing/discount logic and similar behavior should remain testable without the web server.
 
 ## Golden Pattern 19 — Demo Security Is Not Production Security
 
@@ -221,9 +217,182 @@ Never generalize demonstration convenience into production defaults:
 
 ```text
 hard-coded JWT secrets
+demo usernames/passwords
 AllowAnyOrigin
+DeveloperExceptionPage
+raw exception messages
 in-memory persistence
 mock login tokens
 ```
 
-Treat examples as API/composition references; apply production security configuration separately.
+## Golden Pattern 20 — Classic Entities and Smart Entities Are Both Valid
+
+`Orm.EntityStyles` shows two deliberate approaches:
+
+```text
+Classic Delphi entity + TEntityType<T>
+Smart Property entity + Prototype.Entity<T>
+```
+
+Do not rewrite a clean legacy/domain model solely to gain typed queries. Choose the model style that fits the application boundary.
+
+## Golden Pattern 21 — Tenant Identity Is a Security Boundary
+
+A tenant header or route value is not trustworthy simply because middleware can parse it.
+
+```text
+request tenant hint
+ -> authenticated identity / membership validation
+ -> authorized tenant context
+ -> tenant-scoped reads and writes
+```
+
+Missing tenant filtering is a data-leak defect.
+
+## Golden Pattern 22 — Event Bus and Client Realtime Are Different
+
+```text
+Event Bus -> server-side in-process decoupling
+Hubs      -> application-level client/server realtime
+WebSocket -> raw duplex transport
+SSE       -> one-way client stream
+```
+
+Do not choose Hubs when the problem is internal domain-event fanout, and do not choose an Event Bus when the requirement is browser/mobile realtime delivery.
+
+## Golden Pattern 23 — Match Event Bus Lifetime to Unit-of-Work
+
+```text
+AddScopedEventBus -> handlers share HTTP request scope
+AddEventBus       -> independent/fresh child scopes
+IEventPublisher<T> -> narrow publish capability
+```
+
+Choose lifetime intentionally, especially when handlers touch a scoped DbContext.
+
+## Golden Pattern 24 — Server-Driven Web UI Is First-Class
+
+Dext supports more than JSON APIs:
+
+```text
+WebStencils / Dext View Engine
+HTMX server-returned partials
+static assets + Dext endpoints
+```
+
+Before introducing a large SPA toolchain, consider whether server-driven HTML satisfies the UX and deployment goals.
+
+## Golden Pattern 25 — Feature/Vertical Slices Scale Full-Stack Apps
+
+`Web.Dext.Starter.Admin` and desktop MVVM examples both reinforce feature cohesion.
+
+```text
+Feature/
+  DTO/model
+  service
+  endpoint/controller
+  UI/view concern
+```
+
+Do not scatter every feature across global technical folders when a vertical slice keeps change-locality and ownership clearer.
+
+## Golden Pattern 26 — Desktop Has an Explicit Composition Root Too
+
+Active Architecture shows:
+
+```text
+TStartup.Initialize
+ -> build DI container
+ -> create VCL form
+ -> inject ViewModel/dependencies
+ -> run
+ -> release UI
+ -> terminate container
+```
+
+Forms should not become Service Locators.
+
+## Golden Pattern 27 — Choose MVVM or MVU Deliberately
+
+```text
+MVVM -> mutable ViewModel/binding/controller style
+MVU  -> immutable state + Message + Update + Render
+```
+
+Both are valid. Do not combine them accidentally inside one feature without an explicit boundary.
+
+## Golden Pattern 28 — External Providers Need an Adapter Boundary
+
+The Gemini example is intentionally small. Production AI/external API code should evolve toward:
+
+```text
+endpoint/use case
+ -> application interface
+ -> provider adapter
+ -> RestClient
+```
+
+Keep provider DTOs, secrets, retries and provider-specific errors at the integration boundary.
+
+## Golden Pattern 29 — Background Producers Need Shutdown Semantics
+
+AirFlow explicitly terminates, waits for and frees its simulator thread before Hub shutdown.
+
+Production rule:
+
+```text
+start background work
+ -> support cancellation
+ -> stop accepting work
+ -> wait/drain as appropriate
+ -> release resources
+```
+
+Prefer hosted/background abstractions over unmanaged immortal threads when they fit.
+
+## Golden Pattern 30 — Multipart Parsing Is Not Upload Security
+
+For file uploads validate:
+
+```text
+size
+content type/extension policy
+server-side filename/path
+path traversal
+quota
+authorization
+malware/scanning policy where required
+```
+
+Never trust client filenames as storage paths.
+
+## Golden Pattern 31 — Use the Narrowest Useful Capability
+
+Examples repeatedly support interface-segregated APIs:
+
+```text
+IEventPublisher<T> instead of full IEventBus when only one event is needed
+IOptions<T> instead of global config lookup in every method
+typed handler injection instead of request Service Locator
+INavigator instead of direct form construction across features
+```
+
+Narrow capabilities improve testability and reduce accidental coupling.
+
+## Golden Pattern 32 — Full Example Trust Algorithm
+
+```text
+Question
+ -> Decision Tree
+ -> Symbol Index
+ -> Example Cross Reference
+ -> Coverage Matrix
+ -> Drift Register
+ -> focused Tier B example
+ -> architecture Tier A example when available
+ -> current .pas source
+ -> current Dext skill/source
+ -> generate code
+```
+
+This pack treats the official Examples tree as an executable knowledge base, while explicitly guarding against version drift.
