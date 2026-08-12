@@ -201,7 +201,8 @@ def main() -> int:
         else:
             ok(f"Dext-native persistence guidance present: {rel}")
 
-    if "Repository is optional" not in agents and "repository is optional" not in agents.lower():
+    agents_lower = agents.lower()
+    if not re.search(r"repository(?:\s+abstraction)?\s+is\s+(?:now\s+)?optional", agents_lower):
         fail(errors, "Agent contract does not explicitly make Repository optional")
     else:
         ok("Repository is explicitly optional in agent contract")
