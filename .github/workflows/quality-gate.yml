@@ -1,0 +1,45 @@
+name: Pack Quality Gate
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Validate pack structure and consistency
+        run: python tools/validate_pack.py
+
+      - name: Verify Markdown files are non-empty
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r file; do
+            if [[ ! -s "$file" ]]; then
+              echo "Empty Markdown file: $file"
+              exit 1
+            fi
+          done < <(find . -type f -name '*.md' -not -path './.git/*' | sort)
+
+      - name: Verify release notes for current version
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION=$(grep -oE 'v[0-9]{4}\.[0-9]{2}\.[0-9]{2}(-r[0-9]+)?-dext-[0-9a-f]{8}' README.md | head -n1)
+          test -n "$VERSION"
+          test -f "releases/${VERSION}.md"
+          echo "Validated release notes: releases/${VERSION}.md"
