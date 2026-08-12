@@ -1,0 +1,106 @@
+name: Publish Pinned Release
+
+on:
+  workflow_run:
+    workflows: ["Pack Quality Gate"]
+    types: [completed]
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout validated commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Re-run pack validator
+        run: python tools/validate_pack.py
+
+      - name: Resolve release identity
+        id: release
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION=$(grep -oE 'v[0-9]{4}\.[0-9]{2}\.[0-9]{2}(-r[0-9]+)?-dext-[0-9a-f]{8}' README.md | head -n1)
+          AUDITED=$(grep -oE 'Audited HEAD:[[:space:]]*`?[0-9a-f]{40}' snapshots/DEXT_VERSION_SNAPSHOT.md | grep -oE '[0-9a-f]{40}' | head -n1)
+          test -n "$VERSION"
+          test -n "$AUDITED"
+          test -f "releases/${VERSION}.md"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "audited=$AUDITED" >> "$GITHUB_OUTPUT"
+
+      - name: Verify upstream has not moved
+        env:
+          GH_TOKEN: ${{ github.token }}
+          AUDITED: ${{ steps.release.outputs.audited }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          CURRENT=$(curl -fsSL \
+            -H 'Accept: application/vnd.github+json' \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            https://api.github.com/repos/cesarliws/dext/commits/main | jq -r '.sha')
+          echo "Audited upstream: $AUDITED"
+          echo "Current upstream: $CURRENT"
+          if [[ "$CURRENT" != "$AUDITED" ]]; then
+            echo "Refusing release: upstream Dext moved after this Pack was audited."
+            exit 1
+          fi
+
+      - name: Verify release metadata agrees
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+          AUDITED: ${{ steps.release.outputs.audited }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "$VERSION" versioning/RELEASE_MANIFEST.md
+          grep -Fq "$VERSION" CHANGELOG.md
+          grep -Fq "$VERSION" snapshots/DEXT_VERSION_SNAPSHOT.md
+          grep -Fq "$AUDITED" versioning/RELEASE_MANIFEST.md
+          grep -Fq "$AUDITED" README.md
+
+      - name: Create immutable tag if missing
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git ls-remote --exit-code --tags origin "refs/tags/$VERSION" >/dev/null 2>&1; then
+            echo "Tag $VERSION already exists; leaving it untouched."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git tag -a "$VERSION" -m "DEXT AI Coding Pack $VERSION" "${{ github.event.workflow_run.head_sha }}"
+            git push origin "refs/tags/$VERSION"
+          fi
+
+      - name: Create GitHub Release if missing
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.release.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh release view "$VERSION" >/dev/null 2>&1; then
+            echo "GitHub Release $VERSION already exists; leaving it untouched."
+          else
+            gh release create "$VERSION" \
+              --verify-tag \
+              --title "$VERSION" \
+              --notes-file "releases/${VERSION}.md"
+          fi
