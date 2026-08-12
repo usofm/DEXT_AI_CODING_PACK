@@ -24,6 +24,8 @@ Need HTTP endpoint?
 
 Prefer typed handler injection over request Service Locator patterns.
 
+For standard application composition, prefer `IStartup` + `App.UseStartup(...)` when it matches the project structure.
+
 ## 2. Entity Modeling
 
 ```text
@@ -33,12 +35,30 @@ Need ORM entity model?
 ├─ new Dext-first model
 │  └─ Smart Property entity + Prototype.Entity<T>
 └─ exact high-precision decimal field
-   └─ TBcd / BcdType / FmtBcdType
+   └─ TBcd / BcdType / FmtBcdType + Precision(P,S)
 ```
 
 Do not force Smart Properties into every legacy/domain model.
 
-## 3. Database Read
+## 3. Persistence Boundary
+
+```text
+Need database-backed business CRUD?
+├─ Can Dext Entity express it cleanly?
+│  ├─ yes -> scoped TDbContext + IDbSet<T> (default)
+│  └─ no  -> identify the missing capability explicitly
+│            ├─ specialized vendor SQL -> infrastructure adapter/repository
+│            ├─ stored-procedure contract -> explicit integration boundary
+│            ├─ bulk/import pipeline -> specialized persistence component
+│            └─ external/non-Dext store -> repository/port may fit
+└─ metadata-only low-risk CRUD -> Data API may fit
+```
+
+Do not insert `IRepository -> TFDQuery/TUniQuery -> ConnectionFactory` between the service and Dext Entity for ordinary CRUD just because the pattern is familiar.
+
+A Repository is optional. Use it only when it adds a meaningful domain/integration boundary.
+
+## 4. Database Read
 
 ```text
 Need data?
@@ -46,6 +66,7 @@ Need data?
 ├─ reusable named business predicate -> TSpecification<T>
 ├─ eager relations -> Include(...)
 ├─ typed SQL join -> JoinInner/Left/Right/Full/Cross
+├─ typed filter/order -> Smart Properties / Prototype.Entity<T>
 ├─ raw SQL but entity hydration acceptable -> FromSql
 ├─ raw projection / no entity hydration -> TDbContext.UseSql / IDextFastQuery
 └─ direct JSON streaming -> IDextFastQuery / IDbSetFastStream
@@ -53,7 +74,7 @@ Need data?
 
 Push filters/aggregates to the database when translatable; do not materialize large lists just to filter them in Delphi.
 
-## 4. Database Write
+## 5. Database Write
 
 ```text
 Need write?
@@ -66,7 +87,20 @@ Need write?
 
 Do not expose state-machine/payment/accounting/inventory commands as generic CRUD.
 
-## 5. Multi-Tenancy
+## 6. DbContext Registration / Provider
+
+```text
+Need database provider?
+├─ PostgreSQL -> AddDbContext<T> + UsePostgreSQL(...)
+├─ Firebird -> AddDbContext<T> + UseFirebird(...)
+├─ SQL Server -> AddDbContext<T> + UseSQLServer(...)
+├─ existing FireDAC connection definition -> UseConnectionDef(...)
+└─ direct provider object needed for specialized operation -> isolate at infrastructure boundary
+```
+
+For Web workloads, enable `.WithPooling(True)` when appropriate. Do not hand-build a provider connection factory merely to reproduce what Dext DbContext registration already provides.
+
+## 7. Multi-Tenancy
 
 ```text
 Need tenant isolation?
@@ -77,7 +111,7 @@ Need tenant isolation?
 
 Tenant identity is a security boundary. A raw header alone is not authorization.
 
-## 6. Numeric Type
+## 8. Numeric Type
 
 ```text
 Need decimal?
@@ -86,20 +120,35 @@ Need decimal?
 └─ approximate scientific/measurement -> FloatType/Double
 ```
 
-For Firebird 5 financial schemas, exact columns such as `NUMERIC(28,10)` are valid when the domain requires them.
+For financial schemas, exact columns such as `NUMERIC(28,10)` are valid when the domain requires them.
 
-## 7. Collections
+## 9. Collections
 
 ```text
 Need collection?
-├─ normal list -> IList<T>
+├─ normal ORM list -> IList<T>
 ├─ ordered dictionary -> IOrderedDictionary<K,V>
 ├─ immutable concurrent reads -> IFrozenList<T> / IFrozenDictionary<K,V>
 ├─ producer/consumer -> bounded IChannel<T>
 └─ expensive reusable objects -> TDextPool<T> + scoped lease
 ```
 
-## 8. Eventing
+## 10. Authentication / Authorization
+
+```text
+Need auth?
+├─ JWT token API -> IJwtTokenHandler / TJwtTokenHandler + TClaimsBuilder
+├─ middleware -> UseJwtAuthentication(JwtOptions(...))
+├─ authenticated route -> RequireAuthorization
+├─ role route -> RequireAuthorization('Role')
+└─ simple constrained integration -> Basic Auth may fit, always under TLS
+```
+
+Do not create a custom JWT wrapper unless native Dext auth cannot satisfy a verified requirement.
+
+A valid token establishes identity; it does not automatically authorize every business operation.
+
+## 11. Eventing
 
 ```text
 Need internal server-side decoupling?
@@ -112,7 +161,7 @@ Need internal server-side decoupling?
 
 Event Bus is not a client realtime transport.
 
-## 9. Real-Time
+## 12. Real-Time
 
 ```text
 Need client realtime?
@@ -124,7 +173,7 @@ Need client realtime?
 
 Use the highest-level abstraction that satisfies the requirement.
 
-## 10. Background Work
+## 13. Background Work
 
 ```text
 Need background execution?
@@ -137,7 +186,7 @@ Need background execution?
 
 All long-running producers need cancellation/shutdown semantics.
 
-## 11. Web UI
+## 14. Web UI
 
 ```text
 Need browser UI?
@@ -149,7 +198,7 @@ Need browser UI?
 
 Do not default to a Node/SPA toolchain when server-driven HTML satisfies the product requirements.
 
-## 12. Desktop UI
+## 15. Desktop UI
 
 ```text
 Need desktop architecture?
@@ -162,7 +211,7 @@ Need desktop architecture?
 
 Forms are presentation objects, not Service Locators or domain services.
 
-## 13. Validation
+## 16. Validation
 
 ```text
 Need validation?
@@ -174,18 +223,7 @@ Need validation?
 
 Repository-wide current guidance prefers `[MaxLength(N)]`; do not copy stale `[StringLength]` examples blindly.
 
-## 14. Authentication / Authorization
-
-```text
-Need auth?
-├─ token-based API -> JWT
-├─ simple constrained integration -> Basic Auth may fit, always under TLS
-└─ protected operation -> authentication + authorization/domain permission checks
-```
-
-A valid token establishes identity; it does not automatically authorize every business operation.
-
-## 15. Security / Proxy
+## 17. Security / Proxy
 
 ```text
 Behind reverse proxy?
@@ -196,7 +234,7 @@ Behind reverse proxy?
 └─ production errors -> sanitized RFC 9457 Problem Details
 ```
 
-## 16. Caching / Rate Limit
+## 18. Caching / Rate Limit
 
 ```text
 Need read acceleration?
@@ -211,7 +249,7 @@ Need abuse control?
 
 Verify current RFC 9333 rate-limit header behavior.
 
-## 17. File Upload / Download
+## 19. File Upload / Download
 
 ```text
 Need file handling?
@@ -223,7 +261,7 @@ Need file handling?
 
 Always validate size, type policy, authorization, safe server-side filename/path, quota and path traversal.
 
-## 18. External HTTP / AI
+## 20. External HTTP / AI
 
 ```text
 Need external API?
@@ -239,7 +277,7 @@ Need AI?
 
 MCP and direct LLM provider APIs solve different problems.
 
-## 19. MCP
+## 21. MCP
 
 ```text
 Need MCP?
@@ -253,7 +291,7 @@ Need MCP?
 
 Keep authorization and domain invariants behind MCP tools.
 
-## 20. Logging / Observability
+## 22. Logging / Observability
 
 ```text
 Need logging?
@@ -266,7 +304,7 @@ Need logging?
 
 Never log secrets/tokens/private payloads.
 
-## 21. Configuration
+## 23. Configuration
 
 ```text
 Need config?
@@ -278,7 +316,7 @@ Need config?
 
 Later configuration providers override earlier ones.
 
-## 22. Testing
+## 24. Testing
 
 ```text
 Need test?
@@ -290,7 +328,7 @@ Need test?
 └─ protocol feature -> protocol-level .http/integration tests
 ```
 
-## 23. Performance
+## 25. Performance
 
 ```text
 Need more throughput?
@@ -303,7 +341,7 @@ Need more throughput?
 
 Prefer `AcquireScoped` RAII leases when available in the current pool API.
 
-## 24. AI Agent Reference Routing
+## 26. AI Agent Reference Routing
 
 ```text
 Unsure about implementation?
