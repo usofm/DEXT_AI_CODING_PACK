@@ -173,3 +173,57 @@ Before emitting code with an exact attribute/overload/configuration method:
 ```
 
 This rule is especially important because Dext evolves rapidly.
+
+## Golden Pattern 16 — Example Source Beats Example README
+
+Official example README files can lag API evolution. Use README prose to understand intent, but use the current `.pas` source for exact syntax.
+
+Observed case: `Web.DextStore/README.md` still names older controller attributes, while `DextStore.Controllers.pas` uses current `[ApiController]`, `[HttpGet]`, `[HttpPost]`, `[FromRoute]` and `[FromServices]` forms.
+
+Agent rule:
+
+```text
+README -> intent
+source  -> exact syntax
+```
+
+## Golden Pattern 17 — Scale Minimal APIs With Endpoint Modules
+
+Small projects can map routes directly in Startup. Larger Minimal API projects should move route registration into focused endpoint units, as demonstrated by `Web.HelpDesk` and `Web.SalesSystem`.
+
+```text
+DPR
+  -> Startup
+      -> ConfigureServices
+      -> Configure pipeline
+      -> Register feature endpoints
+```
+
+This prevents Startup from becoming a monolithic route file and keeps transport code organized by feature.
+
+## Golden Pattern 18 — Domain Rules Outside Transport
+
+Tier A examples repeatedly separate business behavior from HTTP concerns:
+
+```text
+Server / Controllers / Endpoints
+          ↓
+       Services
+          ↓
+     Domain + Data
+```
+
+State transitions, SLA rules, stock/capacity validation, pricing/discount logic and similar domain behavior should remain testable without the web server.
+
+## Golden Pattern 19 — Demo Security Is Not Production Security
+
+Never generalize demonstration convenience into production defaults:
+
+```text
+hard-coded JWT secrets
+AllowAnyOrigin
+in-memory persistence
+mock login tokens
+```
+
+Treat examples as API/composition references; apply production security configuration separately.
