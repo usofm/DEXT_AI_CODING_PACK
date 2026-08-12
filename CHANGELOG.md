@@ -6,7 +6,44 @@ The pack uses upstream-pinned versions in the form:
 
 ```text
 vYYYY.MM.DD-dext-<shortsha>
+vYYYY.MM.DD-rN-dext-<shortsha>  # pack-only revision
 ```
+
+## [v2026.08.12-r2-dext-412ed292] - 2026-08-12
+
+### Added
+
+- dependency-free executable validator at `tools/validate_pack.py`
+- GitHub Actions quality gate for pushes and pull requests
+- scheduled upstream Dext drift monitor
+- automatic drift issue creation/update
+- guarded automatic tag and GitHub Release publisher
+- release publisher refusal when upstream Dext moved
+- idempotent tag/release behavior for existing releases
+- `CONTRIBUTING.md`
+- pull request quality/evidence template
+
+### Validation Improvements
+
+- required-file checks
+- domain skill and task prompt checks
+- 9-part full memory completeness check
+- 4-part full symbol index completeness check
+- README/manifest/snapshot/changelog version consistency
+- release-notes/version consistency
+- exact upstream SHA agreement across release metadata
+- critical agent behavior guard checks
+- preservation of the 50-example audit baseline
+
+### Compatibility
+
+Upstream Dext is unchanged from the canonical release:
+
+```text
+cesarliws/dext@412ed29207d2d1dc5d4a259a7739a615aed0c626
+```
+
+This is a pack-only hardening revision.
 
 ## [v2026.08.12-dext-412ed292] - 2026-08-12
 
@@ -34,6 +71,7 @@ vYYYY.MM.DD-dext-<shortsha>
 - changelog policy
 - versioning policy
 - release manifest
+- quality/release gates
 
 ### Captured Upstream Changes
 
