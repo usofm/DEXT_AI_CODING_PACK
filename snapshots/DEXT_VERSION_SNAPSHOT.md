@@ -1,5 +1,6 @@
 # DEXT VERSION SNAPSHOT
 
+- Pack version: `v2026.08.12-dext-412ed292`
 - Source repository: `cesarliws/dext`
 - Branch: `main`
 - Audited HEAD: `412ed29207d2d1dc5d4a259a7739a615aed0c626`
@@ -7,6 +8,18 @@
 - Snapshot date: `2026-08-12`
 - Official example directories audited: `50`
 - Official example groups audited: `8`
+
+## Release Identity
+
+Canonical release metadata is stored in:
+
+```text
+versioning/RELEASE_MANIFEST.md
+versioning/VERSIONING_POLICY.md
+CHANGELOG.md
+```
+
+Compatibility is anchored to the exact upstream SHA, not merely the date or branch name.
 
 ## Recent architecture changes captured by this pack
 
@@ -71,15 +84,18 @@ Root memory/index files are compact operational versions. `full/` is the exhaust
 
 ## Refresh rule
 
-When source `main` moves:
+When source `main` moves, follow `automation/REFRESH_WORKFLOW.md` and `automation/CHANGE_IMPACT_MATRIX.md`.
 
-1. update this snapshot with the new HEAD SHA/date;
-2. compare commits since `412ed29207d2d1dc5d4a259a7739a615aed0c626`;
-3. inspect public symbol/API changes under `Sources/`;
-4. inspect `Docs/CONTRIBUTING_AI.md`, repository-wide Critical Rules, changed skills and finalized specs;
-5. inspect changed official examples and update drift/coverage evidence;
-6. refresh compact operational files;
-7. refresh only affected `full/` parts;
-8. verify README loading/reference flow.
+Required close-out sequence:
+
+```text
+compare old SHA -> new HEAD
+  -> update affected pack areas only
+  -> run automation/CONSISTENCY_CHECKLIST.md
+  -> update this snapshot
+  -> update versioning/RELEASE_MANIFEST.md
+  -> update CHANGELOG.md
+  -> assign a new upstream-pinned pack version
+```
 
 Never silently retain obsolete method names, attributes, route syntax, ownership rules or middleware behavior in long-term coding memory.
